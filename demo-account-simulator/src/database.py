@@ -83,21 +83,19 @@ class DatabaseManager:
         if not self.engine: return
         
         maintenance_queries = [
-            # 1. Update Sell Orders
+            # 1. Update Sell Orders (spec §4 Phase B: placed only; no completed)
             """
             WITH lag AS (SELECT (CURRENT_DATE - MAX(placed)::date) as days FROM sell_orders WHERE webshop_id = :shop_id)
             UPDATE sell_orders 
-            SET placed = placed + (SELECT days FROM lag) * INTERVAL '1 day',
-                completed = completed + (SELECT days FROM lag) * INTERVAL '1 day'
+            SET placed = placed + (SELECT days FROM lag) * INTERVAL '1 day'
             WHERE webshop_id = :shop_id AND (SELECT days FROM lag) > 0;
             """,
-            # 2. Update Buy Orders
+            # 2. Update Buy Orders (spec §4 Phase B: placed and expected_delivery_date only; no completed)
             """
             WITH lag AS (SELECT (CURRENT_DATE - MAX(placed)::date) as days FROM buy_orders WHERE webshop_id = :shop_id)
             UPDATE buy_orders 
             SET placed = placed + (SELECT days FROM lag) * INTERVAL '1 day',
-                expected_delivery_date = expected_delivery_date + (SELECT days FROM lag) * INTERVAL '1 day',
-                completed = completed + (SELECT days FROM lag) * INTERVAL '1 day'
+                expected_delivery_date = expected_delivery_date + (SELECT days FROM lag) * INTERVAL '1 day'
             WHERE webshop_id = :shop_id AND (SELECT days FROM lag) > 0;
             """,
             # 3. Update Stocks

@@ -57,12 +57,10 @@ class DemandEngine:
             
             factor = 3.0 * np.exp(-((day_idx - peak)**2) / (2 * width**2))
             
-            if "Winter" in scenario: # Dec Peak
-                 factor = max(factor, 3.0 * np.exp(-((day_idx - 355)**2) / (2 * 20**2)))
-                 
-            if "Micro" in scenario: # Monthly payday
-                factor = 1.0 if (day_idx % 30) < 5 else 0.0
-                
+            if "Winter" in scenario:  # Dec Peak
+                factor = max(factor, 3.0 * np.exp(-((day_idx - 355)**2) / (2 * 20**2)))
+            if "Micro" in scenario:  # Monthly payday: modulate seasonal by payday (don't overwrite)
+                factor = factor * (1.0 if (day_idx % 30) < 5 else 0.0)
             qty = base_qty + (base_qty * factor)
 
         elif "Stockout" in scenario:

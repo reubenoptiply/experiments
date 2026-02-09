@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
@@ -133,7 +133,7 @@ async def run_simulation(request: SimulationRequest, background_tasks: Backgroun
     }
 
 @app.post("/maintain")
-async def run_maintenance(webshop_id: int):
+async def run_maintenance(webshop_id: int = Query(..., description="Webshop ID (must be 1380 for demo)")):
     """
     Triggers Phase B: The Maintainer.
     Shifts all dates forward to today.
