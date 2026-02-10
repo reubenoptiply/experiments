@@ -1,0 +1,27 @@
+- What is the scope of this roadmap?: Create a comprehensive unified roadmap combining both
+- What are the priority growth initiatives beyond what's in the current roadmap?: AI-powered PO data input (Deck partnership), 3-way matching automation, In-house EDI integration, Supplier email conversation analysis
+- What is the timeline for this roadmap?: 12 months (Full year 2026)
+- What are the key business metrics this roadmap should optimize for?: Market differentiation (competitive advantage), Platform scalability (supporting larger customers), Operational efficiency (time/cost savings for customers), Revenue growth (ARR/MRR expansion)
+- What resource constraints should we account for?: Mix of internal team + external partnerships/vendors
+- What level of detail does management expect in the diagrams?: High-level strategic overview (business value, timeline, dependencies)
+- How should new initiatives integrate with the existing Agentic Layer Platform?: Flexible approach - decide per initiative based on fit
+- How do the new growth initiatives relate to the existing agents?: Mix - some extend existing agents, some are standalone capabilities
+- What is the priority order for the 4 new growth initiatives?: Deck PO input -> Email Analysis -> EDI -> 3-way matching
+
+- What customer segments benefit most from these growth initiatives?: All segments - these are platform-wide improvements
+- What are the key competitive differentiators these initiatives enable?: End-to-end automation (from supplier communication to invoice matching), AI-first platform (leveraging latest AI for every workflow), Ecosystem integration (EDI, email, portals, ERPs all connected), Operational efficiency (reducing manual work by 70%+)
+- What does success look like for each initiative?: Business metrics (revenue impact, customer retention, NPS improvement)
+- Are there any known dependencies or blockers for the new initiatives?: All of the above - multiple dependency types
+- What is the expected ROI story for management?: Balanced approach (mix of cost savings, revenue growth, and market position)
+- What type of flows should the Core Flows spec focus on?: Customer Value Flows (how customers experience end-to-end automation)
+- Which specific flows are most critical to document?: End-to-end automation flow (supplier communication → ordering → invoice matching), AI-powered PO data input flow (Deck partnership), Supplier email analysis flow, EDI integration flow, 3-way matching flow (PO/GRN/Invoice verification)
+- What level of detail should each flow include?: High-level (5-7 steps, focus on major phases)
+- Should flows emphasize current state, future state, or the transition?: Transition (show current → future transformation)
+- How should flows represent dependencies and integration points?: Layered flows (individual + master integration diagram)
+- End-to-end automation flow: What is the primary user persona and trigger?: Supply Chain Analyst monitors automated process → ends at analytics updated
+- AI-powered PO data input (Deck): What level of human oversight is required?: Review before submission (user reviews Deck's portal entry before confirming)
+- Supplier email analysis: What types of supplier communications should be handled?: Product availability changes (out of stock, discontinued, back in stock), Pricing updates (promotions, price increases, volume discounts), Order confirmations and modifications, Lead time changes (delays, expedited shipping, schedule updates)
+- Supplier email analysis: How should the system handle extracted information?: Confidence-based (auto-apply high confidence, flag low confidence)
+- EDI integration: What is the primary value proposition?: Cost savings (eliminate third-party fees)
+- 3-way matching: What happens when discrepancies are found?: This should be a mix, at the start we want to auto flag, then move into tollerance based and depending on the customer, we can more to intelligent resolution
+- Master integration diagram: How should the flows connect?: Customer journey (show daily workflow integration)
