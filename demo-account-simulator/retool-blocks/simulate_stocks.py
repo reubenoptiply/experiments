@@ -89,21 +89,21 @@ def seasonal_rop_active(curr_date, archetype):
 
 
 def simulate_one_product(product_row, product_sales_map, today):
-    """Simulate 366 days of stock for one product (today-365 through today). Returns list of stock row dicts."""
+    """Simulate 366 days of stock for one product. Returns (stock_rows, buy_orders, item_deliveries)."""
     p_id = int(product_row["product_id"])
     product_uuid = str(product_row["product_uuid"])
     webshop_uuid = str(product_row["webshop_uuid"])
     lead_time = int(product_row["lead_time"] or 14)
-    # reorder_period: assumed days. If user_replenishment_period is in weeks (not days), multiply by 7 before computing reorder_qty.
     reorder_period = int(product_row["reorder_period"] or 30)
     starting_stock = int(product_row["starting_stock"] or 0)
+    unit_price = float(product_row.get("purchase_price") or 0)
+    supplier_id = int(product_row["supplier_id"]) if product_row.get("supplier_id") is not None else None
+    supplier_uuid = str(product_row["supplier_uuid"]) if product_row.get("supplier_uuid") else None
     archetype = parse_archetype(product_row.get("product_name") or "")
 
-    # avg_daily: sum of units_sold in product_sales_map / 366 (window has 366 days), floor at 1
     total_sold = sum(product_sales_map.values())
     avg_daily = max(1, total_sold // 366)
 
-    # Base reorder_point
     if archetype == "stockout_prone":
         reorder_point = lead_time * avg_daily * 0.6
     else:
@@ -112,7 +112,6 @@ def simulate_one_product(product_row, product_sales_map, today):
 
     reorder_qty = max(1, int(avg_daily * reorder_period))
 
-    # Initial sim_stock
     if archetype == "new_launch":
         sim_stock = 0
     elif archetype == "obsolete":
@@ -122,8 +121,11 @@ def simulate_one_product(product_row, product_sales_map, today):
     else:
         sim_stock = starting_stock + int(avg_daily * lead_time * 2)
 
-    pending_deliveries = []  # list of (delivery_day_index, qty)
+    # (delivery_day_index, qty, order_index) so we can emit item_deliveries when received
+    pending_deliveries = []
     stock_rows = []
+    buy_orders = []
+    item_deliveries = []
     stockout_count = 0
     in_stockout = False
     rop_boost_applied = False
@@ -132,8 +134,9 @@ def simulate_one_product(product_row, product_sales_map, today):
     for day in range(366):
         curr_date = start_date + timedelta(days=day)
         date_str = curr_date.strftime("%Y-%m-%d")
+        placed_ts = date_str + " 00:00:02"
 
-        # (a) Determine active ROP for this day (base includes seasonal ×2.5 or stockout ×0.6)
+        # (a) Active ROP
         active_rop = reorder_point
         if seasonal_rop_active(curr_date, archetype):
             active_rop = int(lead_time * avg_daily * 2.5)
@@ -144,13 +147,22 @@ def simulate_one_product(product_row, product_sales_map, today):
         if rop_boost_applied:
             active_rop = active_rop + int(7 * avg_daily)
 
-        # (b) Process inbound deliveries
+        # (b) Process inbound deliveries and emit item_deliveries
         still_pending = []
-        for (delivery_day_index, qty) in pending_deliveries:
+        for entry in pending_deliveries:
+            delivery_day_index, qty, order_index = entry
             if delivery_day_index <= day:
                 sim_stock += qty
+                delivery_date = start_date + timedelta(days=delivery_day_index)
+                item_deliveries.append({
+                    "order_index": order_index,
+                    "product_id": p_id,
+                    "product_uuid": product_uuid,
+                    "quantity": qty,
+                    "delivered_at": delivery_date.strftime("%Y-%m-%d") + " 00:00:02",
+                })
             else:
-                still_pending.append((delivery_day_index, qty))
+                still_pending.append(entry)
         pending_deliveries = still_pending
 
         # (c) Subtract sales
@@ -168,15 +180,29 @@ def simulate_one_product(product_row, product_sales_map, today):
         else:
             in_stockout = False
 
-        # (e) ROP check and reorder
-        incoming = sum(qty for _, qty in pending_deliveries)
-        if (sim_stock + incoming) < active_rop:
+        # (e) ROP check and reorder — emit buy_order and track for delivery
+        incoming = sum(qty for (_, qty, _) in pending_deliveries)
+        if (sim_stock + incoming) < active_rop and supplier_id is not None and supplier_uuid:
             variance = random.randint(-2, 3)
             actual_lead = max(1, lead_time + variance)
             delivery_day = day + actual_lead
-            pending_deliveries.append((delivery_day, reorder_qty))
+            expected_date = (start_date + timedelta(days=delivery_day)).strftime("%Y-%m-%d") + " 00:00:02"
+            order_index = len(buy_orders)
+            buy_orders.append({
+                "webshop_id": 1380,
+                "webshop_uuid": webshop_uuid,
+                "supplier_id": supplier_id,
+                "supplier_uuid": supplier_uuid,
+                "placed": placed_ts,
+                "expected_delivery_date": expected_date,
+                "product_id": p_id,
+                "product_uuid": product_uuid,
+                "quantity": reorder_qty,
+                "unit_price": round(unit_price, 2),
+            })
+            pending_deliveries.append((delivery_day, reorder_qty, order_index))
 
-        # (f) Append stock row
+        # (f) Stock row
         stock_rows.append({
             "product_id": p_id,
             "product_uuid": product_uuid,
@@ -186,7 +212,7 @@ def simulate_one_product(product_row, product_sales_map, today):
             "date": curr_date.strftime("%Y-%m-%d") + " 00:00:02",
         })
 
-    return stock_rows
+    return (stock_rows, buy_orders, item_deliveries)
 
 
 # --- Retool entry point (input bindings) ---
@@ -201,11 +227,23 @@ if not isinstance(daily_sales, list):
 sales_map = build_sales_map(daily_sales)
 today = datetime.utcnow().date()
 all_stocks = []
+all_buy_orders = []
+all_item_deliveries = []
 
 for product_row in products:
     p_id = int(product_row["product_id"])
     product_sales_map = sales_map.get(p_id, {})
-    rows = simulate_one_product(product_row, product_sales_map, today)
-    all_stocks.extend(rows)
+    stock_rows, buy_orders, item_deliveries = simulate_one_product(product_row, product_sales_map, today)
+    all_stocks.extend(stock_rows)
+    base_index = len(all_buy_orders)
+    all_buy_orders.extend(buy_orders)
+    for d in item_deliveries:
+        d = dict(d)
+        d["order_index"] = base_index + d["order_index"]
+        all_item_deliveries.append(d)
 
-return {"stocks": all_stocks}
+return {
+    "stocks": all_stocks,
+    "buy_orders": all_buy_orders,
+    "item_deliveries": all_item_deliveries,
+}

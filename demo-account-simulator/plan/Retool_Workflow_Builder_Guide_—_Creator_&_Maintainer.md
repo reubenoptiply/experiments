@@ -237,7 +237,56 @@ VALUES
   -- ... ~11,680 rows
 ```
 
-> **Retool tip:** Use a JS block (`build_stocks_insert`) before this block to transform `simulate_all_products.data.stocks` into a single SQL string, then reference it in the SQL block as a raw query.
+> **Retool tip:** Use a JS block (`build_stocks_insert`) before this block to transform `simulate_all_products.data.stocks` into a single SQL string, then reference it in the SQL block as a raw query. Alternatively use `jsonb_to_recordset` with `build_stocks_insert.data.record_set` as in [retool-blocks/insert_stocks.sql](../retool-blocks/insert_stocks.sql).
+
+---
+
+### Blocks 8b–8e — BOs and receipt lines (API loops)
+
+After the simulation runs, create buy orders and receipt lines (item deliveries) via the **Optiply Public API**, not SQL. Use one JS block to build request bodies from simulation output, then two **Retool Loop** blocks to POST them.
+
+| Block | Type | Runs after | Purpose |
+|-------|------|------------|--------|
+| `build_buy_order_api_bodies` | JS | `simulate_stocks` | Build `buy_order_bodies` (JSON:API) and `item_deliveries_meta` from `simulate_stocks.data` |
+| **Loop: POST buy orders** | Retool Loop | `build_buy_order_api_bodies` | POST each body to `https://api.optiply.com/v1/buyOrders?accountId=1380` |
+| `build_receipt_line_bodies` | JS | Loop above | From Loop responses, extract `buyOrderLineId`; build `receipt_line_bodies` for receipt lines |
+| **Loop: POST receipt lines** | Retool Loop | `build_receipt_line_bodies` | POST each body to `https://api.optiply.com/v1/receiptLines?accountId=1380` |
+
+**API request shapes**
+
+- **POST /v1/buyOrders?accountId=** — Header: `Content-Type: application/vnd.api+json`. Body (one buy order per request; lines in same body):
+  ```json
+  {
+    "data": {
+      "type": "buyOrders",
+      "attributes": {
+        "orderLines": [
+          { "quantity": 1, "subtotalValue": 1, "productId": 5983558, "expectedDeliveryDate": "2023-07-29T03:04:29Z" }
+        ],
+        "placed": "2020-06-09T09:04:29Z",
+        "expectedDeliveryDate": "2020-07-29T09:04:29Z",
+        "totalValue": 31.08,
+        "supplierId": 119092,
+        "assembly": false
+      }
+    }
+  }
+  ```
+- **POST /v1/receiptLines?accountId=** — Header: `Content-Type: application/vnd.api+json`. Body (one receipt line per request):
+  ```json
+  {
+    "data": {
+      "type": "receiptLines",
+      "attributes": {
+        "occurred": "2020-05-25T21:22:25Z",
+        "quantity": 48,
+        "buyOrderLineId": 40321894
+      }
+    }
+  }
+  ```
+
+**Setup in Retool:** Copy [build_buy_order_api_bodies.js](../retool-blocks/build_buy_order_api_bodies.js) and [build_receipt_line_bodies.js](../retool-blocks/build_receipt_line_bodies.js). In `build_receipt_line_bodies`, set the variable that holds the **Loop block’s output** (e.g. `post_buy_orders_loop`) to the actual name of your “POST buy orders” Loop block so the script can read the array of responses and extract `buyOrderLineId` from each. If your API returns a different response shape, adjust `getBuyOrderLineIdFromResponse` in that block. Use a delay (e.g. 200 ms) between Loop iterations to respect rate limits.
 
 ---
 
