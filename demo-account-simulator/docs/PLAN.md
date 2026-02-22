@@ -3,7 +3,7 @@
 ## Current state summary
 
 - **Purpose**: Digital-twin demo for Optiply Shop 1380 (Cosmetics): a Python engine that generates 365 days of synthetic inventory/sales/PO history and a daily "maintainer" that shifts dates forward.
-- **Stack**: FastAPI app, PostgreSQL (SQLAlchemy), [simulation.py](../src/simulation.py) (demand archetypes + supply loop), [database.py](../src/database.py) (wipe, batch insert, maintenance shift), Retool Workflows for orchestration.
+- **Stack**: FastAPI app, PostgreSQL (SQLAlchemy), [simulation.py](../python-approach/src/simulation.py) (demand archetypes + supply loop), [database.py](../python-approach/src/database.py) (wipe, batch insert, maintenance shift), Retool Workflows for orchestration.
 - **Spec**: [CONTEXT.md](CONTEXT.md) defines product archetypes, Phase A (Creator) / Phase B (Maintainer), product ID whitelist, and safety constraints.
 
 ---

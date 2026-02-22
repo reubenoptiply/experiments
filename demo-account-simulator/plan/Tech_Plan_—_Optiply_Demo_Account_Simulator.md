@@ -196,7 +196,7 @@ graph TD
 
 ### Simulation Python block — logic summary
 
-The `simulate_all_products` Python block ports file:demo-account-simulator/src/simulation.py with two changes:
+The `simulate_all_products` Python block ports file:demo-account-simulator/python-approach/src/simulation.py with two changes:
 
 1. Replace `numpy` calls with `math.exp` and `random.gauss` (Retool has no numpy)
 2. Return a single dict `{ "stocks": [...] }` — sell_orders and buy_orders are **not** generated (existing DB data is date-shifted instead)

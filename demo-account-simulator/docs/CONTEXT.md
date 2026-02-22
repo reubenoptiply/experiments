@@ -71,9 +71,9 @@ UPDATE stocks SET date = date + (SELECT days FROM lag) * INTERVAL '1 day' WHERE 
 - **`POST /maintain?webshop_id=1380`** – Phase B: Maintainer. Shifts all dates forward to today. Query param `webshop_id` must be `1380`.
 
 ## 7. Development
-- **Entrypoints**: `src/main.py` (FastAPI app), `src/simulation.py` (demand + supply loop), `src/database.py` (PostgreSQL wipe/insert/maintenance).
-- **Run locally**: Set `DATABASE_URL`, then `pip install -r requirements.txt`, `uvicorn src.main:app --host 0.0.0.0 --port 8080`. Docker also uses port 8080.
-- **Tests**: `pytest tests/ -v` from the `demo-account-simulator` directory (see README).
+- **Entrypoints**: `python-approach/src/main.py` (FastAPI app), `python-approach/src/simulation.py` (demand + supply loop), `python-approach/src/database.py` (PostgreSQL wipe/insert/maintenance).
+- **Run locally**: From `python-approach/`, set `DATABASE_URL`, then `pip install -r requirements.txt`, `uvicorn src.main:app --host 0.0.0.0 --port 8080`. Docker also uses port 8080 (build from `python-approach/`).
+- **Tests**: `pytest tests/ -v` from the `demo-account-simulator/python-approach` directory (see README).
 - **Context**: This repo may be edited by both Cursor and Gemini CLI; keep this file (`docs/CONTEXT.md`) and the root README in sync when changing API or behaviour.
 
 ## 8. Implementation status (what’s been done)
@@ -82,7 +82,7 @@ This section records what has been implemented so far. **Update it whenever you 
 
 - **API & safety**
   - `POST /simulate` requires `supplier_id` on each product; only whitelisted product IDs (§5) are simulated (others skipped with a warning).
-  - Product ID whitelist is defined in `src/main.py` as `DEMO_PRODUCT_WHITELIST`.
+  - Product ID whitelist is defined in `python-approach/src/main.py` as `DEMO_PRODUCT_WHITELIST`.
 - **Database**
   - Stock inserts use per-row execute in batches (2000 rows); `database.wipe_and_insert_stocks()` runs wipe + insert in a single transaction to avoid partial state on failure.
   - `stocks` is assumed to have unique constraint on `(product_id, date)`; see comment in `database.py` if your schema differs.
@@ -99,7 +99,7 @@ This section records what has been implemented so far. **Update it whenever you 
   - **Retool-only plan**: The folder `plan/` at the repo root contains the fully Retool Workflow approach (no Python Cloud Run): Epic Brief, Tech Plan, tickets T1–T4, Builder Guide, a paste-ready `plan/retool_simulation_block.py` (T1), and `plan/IMPLEMENTATION_ORDER.md`. Use that when building Creator + Maintainer entirely in Retool.
   - **Context file**: This spec lives in `docs/CONTEXT.md`; when you make changes, update this file (especially §8) so we know what’s going on.
 - **Tests**
-  - Unit tests in `tests/test_simulation.py` for `DemandEngine` (base demand, daily demand for Stable Fast/Slow, Obsolete, New Launch, Seasonal) and `SupplyChainSimulator` (return shape, stocks/sales/buy_orders, `supplier_id` in buy_orders). Run: `pytest tests/ -v` from `demo-account-simulator`.
+  - Unit tests in `python-approach/tests/test_simulation.py` for `DemandEngine` (base demand, daily demand for Stable Fast/Slow, Obsolete, New Launch, Seasonal) and `SupplyChainSimulator` (return shape, stocks/sales/buy_orders, `supplier_id` in buy_orders). Run: `pytest tests/ -v` from `demo-account-simulator/python-approach`.
 - **Port**
   - App and Docker use port 8080; Dockerfile respects Cloud Run’s `PORT` env var (default 8080).
 - **Cloud Run**

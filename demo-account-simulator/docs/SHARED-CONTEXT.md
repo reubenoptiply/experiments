@@ -132,16 +132,20 @@ Lag = `CURRENT_DATE - MAX(date)` (from stocks) or equivalent from orders.
 ```
 demo-account-simulator/
 ├── README.md                 # Setup, run, test, deploy, Retool pointers
-├── .env.example              # DATABASE_URL, optional FAIL_FAST_NO_DB
-├── requirements.txt          # fastapi, uvicorn, pandas, numpy, sqlalchemy, psycopg2-binary, pydantic, python-dotenv, httpx, pytest
-├── Dockerfile                # Python 3.11, port from PORT env (Cloud Run)
-├── src/
-│   ├── main.py               # FastAPI app, /simulate, /maintain, /health, whitelist, Query(webshop_id)
-│   ├── simulation.py        # DemandEngine, SupplyChainSimulator (365-day loop, archetypes)
-│   └── database.py          # DatabaseManager: wipe_stocks, batch_insert_stocks, wipe_and_insert_stocks, run_maintenance_shift, check_connection
-├── tests/
-│   ├── conftest.py           # Pytest path setup
-│   └── test_simulation.py    # DemandEngine + SupplyChainSimulator unit tests
+├── python-approach/         # Legacy Python engine (Cloud Run)
+│   ├── .env.example         # DATABASE_URL, optional FAIL_FAST_NO_DB
+│   ├── requirements.txt    # fastapi, uvicorn, pandas, numpy, sqlalchemy, psycopg2-binary, pydantic, python-dotenv, httpx, pytest
+│   ├── Dockerfile           # Python 3.11, port from PORT env (Cloud Run)
+│   ├── src/
+│   │   ├── main.py          # FastAPI app, /simulate, /maintain, /health, whitelist, Query(webshop_id)
+│   │   ├── simulation.py    # DemandEngine, SupplyChainSimulator (365-day loop, archetypes)
+│   │   └── database.py      # DatabaseManager: wipe_stocks, batch_insert_stocks, wipe_and_insert_stocks, run_maintenance_shift, check_connection
+│   └── tests/
+│       ├── conftest.py      # Pytest path setup
+│       └── test_simulation.py  # DemandEngine + SupplyChainSimulator unit tests
+├── retool-blocks/           # Retool SQL/Python blocks (Creator + Maintainer)
+├── retool-workflow-json/
+├── plan/
 └── docs/
     ├── CONTEXT.md            # Full spec, API, implementation status (source of truth)
     ├── RETOOL.md             # Retool workflow description, batching/throttling, Cloud Run URL
@@ -159,8 +163,8 @@ demo-account-simulator/
 - **DB:** Single-transaction wipe + insert for stocks; maintenance updates only `placed` and `expected_delivery_date` (no `completed`).
 - **Robustness:** `/health`, optional `FAIL_FAST_NO_DB=1`, 503 when DB missing, try/except around simulate and maintain.
 - **Docs:** CONTEXT.md (§8), RETOOL.md, DEPLOY-CLOUDRUN.md, PLAN.md, GEMINI.md.
-- **Tests:** pytest for DemandEngine and SupplyChainSimulator (`pytest tests/ -v` from project root).
-- **Deploy:** Dockerfile uses `PORT`; deploy steps in `docs/DEPLOY-CLOUDRUN.md`.
+- **Tests:** pytest for DemandEngine and SupplyChainSimulator (`pytest tests/ -v` from `python-approach/`).
+- **Deploy:** Build from `python-approach/`; Dockerfile uses `PORT`; deploy steps in `docs/DEPLOY-CLOUDRUN.md`.
 
 ---
 
@@ -169,6 +173,6 @@ demo-account-simulator/
 - **Copy this file** into the other tool’s context or attach it as a single “project brief.”
 - **For “Python vs Retool”:** Use §3 (Option A/B/C) and §4–§5 to compare effort, ops, and performance.
 - **For implementation:** Use §4 (API, whitelist, Phase B SQL) and §5 (repo layout) plus `docs/CONTEXT.md` and `docs/RETOOL.md` for full detail.
-- **For deployment:** Point to `docs/DEPLOY-CLOUDRUN.md` and the Dockerfile; Cloud Run service URL is the base for `POST /simulate` and `POST /maintain`.
+- **For deployment:** Point to `docs/DEPLOY-CLOUDRUN.md` and `python-approach/Dockerfile` (build context: `python-approach/`); Cloud Run service URL is the base for `POST /simulate` and `POST /maintain`.
 
 If you change the architecture (e.g. move logic into Retool), update `docs/CONTEXT.md` §8 and this file so the next handoff stays accurate.

@@ -2,7 +2,7 @@
 
 ## What
 
-Port the simulation engine from `file:demo-account-simulator/src/simulation.py` into a self-contained Retool Python block. This is the foundation — all Creator workflow blocks consume its output.
+Port the simulation engine from `file:demo-account-simulator/python-approach/src/simulation.py` into a self-contained Retool Python block. This is the foundation — all Creator workflow blocks consume its output.
 
 ## Scope
 
@@ -53,4 +53,4 @@ No sell_orders or buy_orders arrays needed — those tables are date-shifted in-
 
 ## Spec references
 - `spec:ed4445ac-7cc8-4778-912d-6824d7f919b1/8258a28c-e4aa-4648-a4a8-a1a439255d6e` — Tech Plan §1 (constraints), §3 (simulation logic summary)
-- `file:demo-account-simulator/src/simulation.py` — source to port
+- `file:demo-account-simulator/python-approach/src/simulation.py` — source to port

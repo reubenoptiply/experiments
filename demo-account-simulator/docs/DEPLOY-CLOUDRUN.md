@@ -22,25 +22,27 @@ gcloud artifacts repositories create demo-simulator --repository-format=docker -
 
 ## 2. Build and push the image
 
+The Python app lives in `python-approach/`; use that directory as the Docker build context (it contains `Dockerfile`, `requirements.txt`, and `src/`).
+
 **Option A – Build in Cloud (recommended):**
 
 From the repository root:
 
 ```bash
-gcloud builds submit --tag REGION-docker.pkg.dev/PROJECT_ID/demo-simulator/demo-account-simulator:latest demo-account-simulator/
+gcloud builds submit --tag REGION-docker.pkg.dev/PROJECT_ID/demo-simulator/demo-account-simulator:latest demo-account-simulator/python-approach/
 ```
 
 Or from inside `demo-account-simulator`:
 
 ```bash
-cd demo-account-simulator
+cd demo-account-simulator/python-approach
 gcloud builds submit --tag REGION-docker.pkg.dev/PROJECT_ID/demo-simulator/demo-account-simulator:latest .
 ```
 
 **Option B – Build locally and push:**
 
 ```bash
-docker build -t REGION-docker.pkg.dev/PROJECT_ID/demo-simulator/demo-account-simulator:latest demo-account-simulator/
+docker build -t REGION-docker.pkg.dev/PROJECT_ID/demo-simulator/demo-account-simulator:latest demo-account-simulator/python-approach/
 gcloud auth configure-docker REGION-docker.pkg.dev
 docker push REGION-docker.pkg.dev/PROJECT_ID/demo-simulator/demo-account-simulator:latest
 ```

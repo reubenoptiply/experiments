@@ -6,7 +6,7 @@ Digital-twin demo environment for Optiply Shop 1380 (Cosmetics): 365 days of syn
 
 | Approach | Where | Use case |
 |----------|------|----------|
-| **Python engine (Cloud Run)** | This folder: `src/`, `docs/` | Service that exposes `POST /simulate` and `POST /maintain`; Retool calls the API and posts payloads to Optiply. |
+| **Python engine (Cloud Run)** | [python-approach/](python-approach/) | Service that exposes `POST /simulate` and `POST /maintain`; Retool calls the API and posts payloads to Optiply. |
 | **Pure Retool Workflows** | [plan/](plan/) | Creator + Maintainer built entirely in Retool (no Python service). Simulation runs in a Retool Python block; SQL blocks handle stocks and date shifts. |
 
 - **Spec & API:** [docs/CONTEXT.md](docs/CONTEXT.md) — technical specification, API contract, implementation status.
@@ -18,17 +18,17 @@ Digital-twin demo environment for Optiply Shop 1380 (Cosmetics): 365 days of syn
 ## Setup (Python engine)
 
 1. **Environment**
-   - Copy `.env.example` to `.env` and set `DATABASE_URL` (PostgreSQL connection string).
+   - In `python-approach/`, copy `.env.example` to `.env` and set `DATABASE_URL` (PostgreSQL connection string).
    - Optional: set `FAIL_FAST_NO_DB=1` in production (e.g. Cloud Run) so the app fails at startup if `DATABASE_URL` is missing.
 
 2. **Install**
    ```bash
-   pip install -r requirements.txt
+   cd python-approach && pip install -r requirements.txt
    ```
 
 3. **Run**
-   - Local: `uvicorn src.main:app --host 0.0.0.0 --port 8080` (or port 8000 if you prefer).
-   - Docker: port 8080 (see `Dockerfile`).
+   - Local: from `python-approach/`, run `uvicorn src.main:app --host 0.0.0.0 --port 8080` (or port 8000 if you prefer).
+   - Docker: build from `python-approach/`; port 8080 (see `python-approach/Dockerfile`).
 
 ## Endpoints
 
@@ -39,15 +39,15 @@ Digital-twin demo environment for Optiply Shop 1380 (Cosmetics): 365 days of syn
 
 ## Tests
 
-From the `demo-account-simulator` directory (or repo root with `PYTHONPATH` set):
+From the `demo-account-simulator/python-approach` directory (or with `PYTHONPATH=python-approach` from `demo-account-simulator`):
 
 ```bash
-pytest tests/ -v
+cd python-approach && pytest tests/ -v
 ```
 
 ## Deploy to Google Cloud Run
 
-See [docs/DEPLOY-CLOUDRUN.md](docs/DEPLOY-CLOUDRUN.md) for steps: enable APIs, create Artifact Registry repo, build and push the image, deploy with `gcloud run deploy` and `DATABASE_URL` (and optionally `FAIL_FAST_NO_DB=1`). Use the resulting service URL in Retool (see [docs/RETOOL.md](docs/RETOOL.md)).
+See [docs/DEPLOY-CLOUDRUN.md](docs/DEPLOY-CLOUDRUN.md) for steps: enable APIs, create Artifact Registry repo, build from `python-approach/`, push and deploy with `gcloud run deploy` and `DATABASE_URL` (and optionally `FAIL_FAST_NO_DB=1`). Use the resulting service URL in Retool (see [docs/RETOOL.md](docs/RETOOL.md)).
 
 ## Retool (Python engine path)
 
