@@ -28,7 +28,7 @@ function toISOZ(dateStr) {
   return s.replace(" ", "T") + "Z";
 }
 
-const itemDeliveriesMeta = build_buy_order_api_bodies?.data?.item_deliveries_meta ?? simulate_stocks?.data?.item_deliveries ?? [];
+const itemDeliveriesMeta = build_buy_order_api_bodies?.data?.item_deliveries_meta ?? simulate_buy_orders_from_stocks?.data?.item_deliveries ?? simulate_stocks?.data?.item_deliveries ?? [];
 // In Retool: replace post_buy_orders_loop with the name of your Loop block that POSTs buy orders.
 // It should expose an array of responses (one per iteration). Retool often puts this in .data or .result.
 const raw = typeof post_buy_orders_loop !== "undefined" ? (post_buy_orders_loop?.data ?? post_buy_orders_loop?.result ?? post_buy_orders_loop) : [];

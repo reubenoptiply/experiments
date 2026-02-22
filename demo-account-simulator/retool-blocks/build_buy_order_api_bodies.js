@@ -1,7 +1,7 @@
 // Retool JS block: build_buy_order_api_bodies
-// Runs after simulate_stocks. Reads buy_orders from simulation and builds JSON:API request bodies
-// for POST https://api.optiply.com/v1/buyOrders?accountId=<accountId>
-// In Retool: add a Loop block that POSTs each body; then use build_receipt_line_bodies after the loop.
+// Runs after simulate_stocks OR simulate_buy_orders_from_stocks. Reads buy_orders and builds JSON:API
+// request bodies for POST https://api.optiply.com/v1/buyOrders?accountId=<accountId>
+// BO-only path: use simulate_buy_orders_from_stocks (reads existing stocks from DB; no stock re-sim).
 
 function toISOZ(dateStr) {
   if (!dateStr) return null;
@@ -10,8 +10,10 @@ function toISOZ(dateStr) {
   return s.replace(" ", "T") + "Z";
 }
 
-const buyOrders = simulate_stocks?.data?.buy_orders;
-const itemDeliveries = simulate_stocks?.data?.item_deliveries ?? [];
+// Prefer BO-only source when stocks were not re-simulated; else full simulation output.
+const boSource = simulate_buy_orders_from_stocks?.data ?? simulate_stocks?.data;
+const buyOrders = boSource?.buy_orders;
+const itemDeliveries = boSource?.item_deliveries ?? [];
 
 if (!buyOrders || !Array.isArray(buyOrders)) {
   return {
