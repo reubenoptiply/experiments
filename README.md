@@ -20,7 +20,7 @@ Everything here supports the same north star: **turn Optiply from an inventory o
 |--------|------------|----------------|
 | **[product-growth-plan](./product-growth-plan/)** | Product growth roadmap 2026: strategy, initiatives, and business impact. | [1-min summary](./product-growth-plan/1-min-summary.md) → [5-min](./product-growth-plan/5-min-summary.md) → [roadmap](./product-growth-plan/product-growth-roadmap.md) |
 | **[deck-supplier-portals](./deck-supplier-portals/)** | Deck × Optiply: automate PO entry in supplier portals (eliminate double data entry). | [Context & implementation](./deck-supplier-portals/context-and-implementation.md) → [Tech plan (Retool)](./deck-supplier-portals/tech-plan-retool.md) |
-| **[demo-account-simulator](./demo-account-simulator/)** | Digital-twin demo for Shop 1380: synthetic inventory/sales/PO history and daily maintainer. | [README](./demo-account-simulator/README.md) → [Retool plan](./demo-account-simulator/plan/README.md) → [Execution runbook](./demo-account-simulator/plan/EXECUTION_RUNBOOK.md) |
+| **[demo-account-simulator](./demo-account-simulator/)** | Digital-twin demo for Shop 1380: synthetic inventory/sales/PO history and daily maintainer. **Two paths:** Python API (Cloud Run) or [pure Retool Workflows](demo-account-simulator/plan/) (Creator + Maintainer, no Python service). | [README](./demo-account-simulator/README.md) → [Retool plan & runbook](./demo-account-simulator/plan/README.md) → [Execution runbook](./demo-account-simulator/plan/EXECUTION_RUNBOOK.md) |
 
 ---
 
@@ -49,6 +49,7 @@ This repo holds the **plans and execution details** for these and related work (
 
 ## Conventions
 
+- **READMEs** — This file (repo overview), [demo-account-simulator/README.md](demo-account-simulator/README.md) (project overview + Python vs Retool), and [demo-account-simulator/plan/README.md](demo-account-simulator/plan/README.md) (Retool plan folder). Product-growth-plan and deck-supplier-portals use their key docs as entry points (no separate README).
 - **Briefs & specs** — Stored in the project folder (e.g. `plan/`, `docs/`) with a clear name (Epic Brief, Tech Plan, CONTEXT.md).
 - **Execution** — Runbooks and builder guides live next to the plan (e.g. `demo-account-simulator/plan/EXECUTION_RUNBOOK.md`).
 - **Single source of truth** — Each project has one main context/spec file; other docs link to it and note when they’re stubs or TBD.

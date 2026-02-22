@@ -1,10 +1,21 @@
 # Demo Account Simulator (Shop 1380)
 
-Digital-twin demo environment for Optiply Shop 1380 (Cosmetics): a Python engine that generates 365 days of synthetic inventory/sales/PO history and a daily "maintainer" that shifts dates forward.
+Digital-twin demo environment for Optiply Shop 1380 (Cosmetics): 365 days of synthetic inventory/sales/PO history and a daily maintainer that keeps the dashboard "live".
 
-See [docs/CONTEXT.md](docs/CONTEXT.md) for the full technical specification. Gemini CLI context: [docs/GEMINI.md](docs/GEMINI.md).
+## Two ways to run
 
-## Setup
+| Approach | Where | Use case |
+|----------|------|----------|
+| **Python engine (Cloud Run)** | This folder: `src/`, `docs/` | Service that exposes `POST /simulate` and `POST /maintain`; Retool calls the API and posts payloads to Optiply. |
+| **Pure Retool Workflows** | [plan/](plan/) | Creator + Maintainer built entirely in Retool (no Python service). Simulation runs in a Retool Python block; SQL blocks handle stocks and date shifts. |
+
+- **Spec & API:** [docs/CONTEXT.md](docs/CONTEXT.md) — technical specification, API contract, implementation status.
+- **Retool-only build:** [plan/README.md](plan/README.md) — brief, tech plan, T1–T4 tickets, Builder Guide, paste-ready simulation script. To execute quickly: [plan/EXECUTION_RUNBOOK.md](plan/EXECUTION_RUNBOOK.md).
+- **Gemini CLI:** [docs/GEMINI.md](docs/GEMINI.md).
+
+---
+
+## Setup (Python engine)
 
 1. **Environment**
    - Copy `.env.example` to `.env` and set `DATABASE_URL` (PostgreSQL connection string).
@@ -38,6 +49,6 @@ pytest tests/ -v
 
 See [docs/DEPLOY-CLOUDRUN.md](docs/DEPLOY-CLOUDRUN.md) for steps: enable APIs, create Artifact Registry repo, build and push the image, deploy with `gcloud run deploy` and `DATABASE_URL` (and optionally `FAIL_FAST_NO_DB=1`). Use the resulting service URL in Retool (see [docs/RETOOL.md](docs/RETOOL.md)).
 
-## Retool
+## Retool (Python engine path)
 
-The simulation engine returns `api_payloads` (sales, buy_orders). Post these to the Optiply Public API in batches with a short delay (e.g. 100–200 ms between requests) to respect rate limits.
+When using the Python service, the simulation engine returns `api_payloads` (sales, buy_orders). Post these to the Optiply Public API in batches with a short delay (e.g. 100–200 ms between requests) to respect rate limits. For the **pure Retool** path (no Python service), use the [plan/](plan/) folder instead.

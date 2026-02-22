@@ -51,9 +51,10 @@ In the **insert_stocks** SQL block, run the query as **raw SQL** and use:
 
 | File | Purpose |
 |------|--------|
+| [EXECUTION_RUNBOOK.md](./EXECUTION_RUNBOOK.md) | Time-boxed tick list to finish Creator + Maintainer (~2.5–3.5 hrs) |
 | [IMPLEMENTATION_ORDER.md](./IMPLEMENTATION_ORDER.md) | Dependency order and how to start (T1→T2→T3→T4) |
-| [retool_simulation_block.py](./retool_simulation_block.py) | Paste-ready Retool Python block (T1) |
+| [retool_simulation_block.py](./retool_simulation_block.py) | Paste-ready Retool Python block (T1); pure Python, no numpy/pandas |
 | [Epic_Brief_—_Optiply_Demo_Account_Simulator.md](./Epic_Brief_—_Optiply_Demo_Account_Simulator.md) | Scope and success criteria |
 | [Tech_Plan_—_Optiply_Demo_Account_Simulator.md](./Tech_Plan_—_Optiply_Demo_Account_Simulator.md) | Architecture and constraints |
-| T1 / T2 / T3 / T4 tickets | Per-phase acceptance criteria |
-| [Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md](./Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md) | Block-by-block build steps |
+| [T1](T1__Build_the_Simulation_Python_Block_(Retool).md) / [T2](T2__Creator_Workflow_—_SQL_Data_Layer_(stocks_+_sell_orders).md) / [T3](T3__Creator_Workflow_—_Promotions,_Composed_Products_+_Orchestration.md) / [T4](T4__Build_the_Maintainer_Workflow_(nightly_cron).md) | Per-phase tickets and acceptance criteria |
+| [Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md](./Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md) | Block-by-block SQL/code and wiring for Creator & Maintainer |
