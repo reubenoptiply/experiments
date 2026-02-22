@@ -96,6 +96,7 @@ This section records what has been implemented so far. **Update it whenever you 
   - `retool-workflow-sandbox.json` (if present in `docs/`) is a Retool Workflows export (re-import only); the readable workflow logic is in RETOOL.md.
   - [DEPLOY-CLOUDRUN.md](DEPLOY-CLOUDRUN.md) describes how to build and deploy to Google Cloud Run (APIs, Artifact Registry, deploy command, DB connectivity).
   - [PLAN.md](PLAN.md) and [GEMINI.md](GEMINI.md) give Gemini CLI (and others) the improvement plan and spec references.
+  - **Retool-only plan**: The folder `plan/` at the repo root contains the fully Retool Workflow approach (no Python Cloud Run): Epic Brief, Tech Plan, tickets T1–T4, Builder Guide, a paste-ready `plan/retool_simulation_block.py` (T1), and `plan/IMPLEMENTATION_ORDER.md`. Use that when building Creator + Maintainer entirely in Retool.
   - **Context file**: This spec lives in `docs/CONTEXT.md`; when you make changes, update this file (especially §8) so we know what’s going on.
 - **Tests**
   - Unit tests in `tests/test_simulation.py` for `DemandEngine` (base demand, daily demand for Stable Fast/Slow, Obsolete, New Launch, Seasonal) and `SupplyChainSimulator` (return shape, stocks/sales/buy_orders, `supplier_id` in buy_orders). Run: `pytest tests/ -v` from `demo-account-simulator`.
