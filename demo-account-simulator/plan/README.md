@@ -1,6 +1,9 @@
 # Plan: Pure Retool Workflow Demo Simulator
 
-This folder holds the **brief, tech plan, tickets, and build guide** for the fully Retool-workflow-based demo account simulator (no Python Cloud Run). Start with [IMPLEMENTATION_ORDER.md](./IMPLEMENTATION_ORDER.md) for the recommended build order.
+This folder holds the **brief, tech plan, tickets, and build guide** for the fully Retool-workflow-based demo account simulator (no Python Cloud Run).
+
+- **Want to finish by tomorrow?** → Use **[EXECUTION_RUNBOOK.md](./EXECUTION_RUNBOOK.md)** for a time-boxed, tick-list execution plan (~2.5–3.5 hrs).
+- **Otherwise** → Start with [IMPLEMENTATION_ORDER.md](./IMPLEMENTATION_ORDER.md) for the recommended build order.
 
 ## Quick start
 
