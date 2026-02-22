@@ -11,7 +11,7 @@ Use this as a tick list. Keep the [Builder Guide](./Retool_Workflow_Builder_Guid
 - [ ] **Retool app** — Workflow (not App) with a **PostgreSQL** resource connected to the demo DB.
 - [ ] **Product whitelist** — Confirm the 32 product IDs with your DB. Builder Guide uses the list in Block 2; if your whitelist differs, update `fetch_products` IN clause once and reuse everywhere.
 - [ ] **Environment** — `access_token` (Optiply Bearer) available for `replan_agenda` (Retool env/secret or workflow variable).
-- [ ] **Files at hand** — `plan/retool_simulation_block.py`, `plan/README.md` (build_stocks_insert JS), Builder Guide (all SQL blocks).
+- [ ] **Files at hand** — `retool-blocks/` (simulate_stocks.py, fetch_product_meta.sql, fetch_daily_sales.sql, build_stocks_insert.js, insert_stocks.sql, soft_delete_stocks.sql), `plan/README.md`, Builder Guide.
 
 ---
 
@@ -22,48 +22,33 @@ Build in this order. **Test after each step** so you don’t carry forward broke
 ### 1. Trigger + fetch (15 min)
 
 - [ ] Add **Webhook** trigger → name: `startTrigger`.
-- [ ] Add **SQL** block → name: `fetch_products`, runs after `startTrigger`.  
-  Copy SQL from Builder Guide Block 2 (SELECT from webshop_products … WHERE wp.id IN (...)).
-- [ ] Run workflow (trigger → fetch_products). Confirm **32 rows** and columns: `product_id`, `product_uuid`, `webshop_id`, `webshop_uuid`, `name`, `selling_price`, `purchase_price`, `supplier_id`, `supplier_uuid`, `delivery_time`.
+- [ ] Add **SQL** blocks → `fetch_product_meta` and `fetch_daily_sales`, run after `startTrigger`.  
+  Copy from [retool-blocks/fetch_product_meta.sql](../retool-blocks/fetch_product_meta.sql) and [retool-blocks/fetch_daily_sales.sql](../retool-blocks/fetch_daily_sales.sql).
+- [ ] Run workflow (trigger → fetch_product_meta + fetch_daily_sales). Confirm product rows and daily sales columns as expected.
 
-### 2. Lag + parallel branches (25 min)
+### 2. Simulation (T1) (25 min)
 
-- [ ] Add **SQL** block → name: `calculate_lag`, runs after `fetch_products`.  
-  Copy from Builder Guide Block 3. Run and check `lag_days` (e.g. 0 or positive).
-- [ ] Add **SQL** block → name: `shift_sell_orders`, runs after `calculate_lag`.  
-  Copy from Builder Guide Block 5; uses `{{ calculate_lag.data[0].lag_days }}`.
-- [ ] Add **SQL** block → name: `shift_buy_orders`, runs after `calculate_lag`.  
-  Copy from Builder Guide Block 6; same `lag_days` reference.
-- [ ] Run trigger → fetch_products → calculate_lag → shift_sell_orders and shift_buy_orders. If `lag_days` is 0, shifts are no-ops (safe).
+- [ ] Add **Python** block → name: `simulate_stocks`, runs after `fetch_product_meta` and `fetch_daily_sales`.
+- [ ] Paste the **entire** contents of [retool-blocks/simulate_stocks.py](../retool-blocks/simulate_stocks.py). The script expects `fetch_product_meta.data` and `fetch_daily_sales.data` (Retool exposes prior blocks by name).
+- [ ] **Quick test:** Run trigger → fetch_product_meta + fetch_daily_sales → simulate_stocks. Check output: `data.stocks` is an array; rows have `product_id`, `product_uuid`, `webshop_id`, `webshop_uuid`, `on_hand`, `date` (e.g. `YYYY-MM-DD 00:00:02`). Row count ≈ 32 × 366.
 
-### 3. Simulation (T1) (25 min)
+### 3. Stocks write path (20 min)
 
-- [ ] Add **Python** block → name: `simulate_all_products`, runs after `calculate_lag` (same level as the two shift blocks).
-- [ ] Paste the **entire** contents of `plan/retool_simulation_block.py`.  
-  The script reads `fetch_products.data`; ensure the block has access to `fetch_products` (Retool usually exposes prior blocks by name).
-- [ ] **Quick test:** Run only fetch_products → calculate_lag → simulate_all_products. Check output: `data.stocks` is an array; one row has `product_id`, `product_uuid`, `webshop_id`, `webshop_uuid`, `on_hand`, `date` with date like `YYYY-MM-DD 00:00:02`. Row count ≈ 32 × 365 = 11,680.
-- [ ] If you hit “no module numpy” or similar, you’re still on the old script — use only the file from `plan/retool_simulation_block.py`.
-
-### 4. Stocks write path (20 min)
-
-- [ ] Add **SQL** block → name: `soft_delete_stocks`, runs after `simulate_all_products`.  
-  Copy from Builder Guide Block 7.
+- [ ] Add **SQL** block → name: `soft_delete_stocks`, runs after `simulate_stocks`.  
+  Copy from [retool-blocks/soft_delete_stocks.sql](../retool-blocks/soft_delete_stocks.sql).
 - [ ] Add **JavaScript** block → name: `build_stocks_insert`, runs after `soft_delete_stocks`.  
-  Copy the script from `plan/README.md` (section “JS block: build_stocks_insert”). It reads `simulate_all_products?.data?.stocks` and returns `{ stocks_values_sql, row_count }`.
+  Copy from [retool-blocks/build_stocks_insert.js](../retool-blocks/build_stocks_insert.js). It reads `simulate_stocks?.data?.stocks` and returns `{ sql_values }`.
 - [ ] Add **SQL** block → name: `insert_stocks`, runs after `build_stocks_insert`.  
-  In Retool Workflows you need to run the **dynamic query**: the full INSERT. So either:
-  - Use a **Resource** that supports “Run query” with a string, and set the query to `{{ build_stocks_insert.data.stocks_values_sql }}`, or  
-  - If your SQL block accepts only a single query text, paste a placeholder and replace it with `{{ build_stocks_insert.data.stocks_values_sql }}`.  
-  Ensure the block runs one statement (the whole INSERT).
-- [ ] Run the chain: trigger → … → soft_delete_stocks → build_stocks_insert → insert_stocks. Verify in DB: `SELECT COUNT(*) FROM stocks WHERE webshop_id = 1380 AND deleted_at IS NULL` → 11,680.
+  Use [retool-blocks/insert_stocks.sql](../retool-blocks/insert_stocks.sql) and bind the VALUES to `{{ build_stocks_insert.data.sql_values }}` (or your block's equivalent).
+- [ ] Run the chain: trigger → … → soft_delete_stocks → build_stocks_insert → insert_stocks. Verify in DB: `SELECT COUNT(*) FROM stocks WHERE webshop_id = 1380 AND deleted_at IS NULL` matches expected rows.
 
-**Checkpoint:** Creator data path works: fetch → lag → simulate + shifts → soft_delete → insert. No orchestration yet.
+**Checkpoint:** Creator data path works: fetch_product_meta + fetch_daily_sales → simulate_stocks → soft_delete → build_stocks_insert → insert_stocks. No orchestration yet.
 
 ---
 
 ## Phase 2: Creator — Orchestration (T3) — ~30 min
 
-- [ ] Add **JavaScript** block → name: `all_done`, runs after **all three**: `shift_sell_orders`, `shift_buy_orders`, `insert_stocks`.  
+- [ ] Add **JavaScript** block → name: `all_done`, runs after `insert_stocks`.  
   Code: `return { done: true };` (join gate).
 - [ ] Add **SQL** block → name: `setup_promotions`, runs after `all_done`.  
   Stub: `SELECT 'promotions_stub' AS status;` (Builder Guide Block 10).

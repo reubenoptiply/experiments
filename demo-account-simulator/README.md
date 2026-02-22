@@ -2,6 +2,16 @@
 
 Digital-twin demo environment for Optiply Shop 1380 (Cosmetics): 365 days of synthetic inventory/sales/PO history and a daily maintainer that keeps the dashboard "live".
 
+## Project structure
+
+| Folder | Contents |
+|--------|----------|
+| **[retool-blocks/](retool-blocks/)** | Canonical Retool blocks: SQL (`fetch_product_meta`, `fetch_daily_sales`, `soft_delete_stocks`, `insert_stocks`), Python (`simulate_stocks`), JS (`build_stocks_insert`). Copy these into your Retool workflow. |
+| **[plan/](plan/)** | Build guide: tickets (T1–T4), execution runbook, Builder Guide, Epic/Tech plan. Use with [plan/README.md](plan/README.md). |
+| **[docs/](docs/)** | Spec and ops: CONTEXT.md (API, whitelist, status), DEPLOY-CLOUDRUN.md, RETOOL.md, PLAN.md, GEMINI.md, SHARED-CONTEXT.md. |
+| **[python-approach/](python-approach/)** | Legacy Python engine (FastAPI on Cloud Run). Optional; the Retool-only path uses `retool-blocks/` and needs no Python service. |
+| **retool-workflow-json/** | Exported Retool workflow JSON (reference only). |
+
 ## Two ways to run
 
 | Approach | Where | Use case |

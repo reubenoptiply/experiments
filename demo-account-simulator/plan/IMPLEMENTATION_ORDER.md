@@ -16,8 +16,8 @@ T4 (Maintainer: duplicate Creator, add delete_manual_buy_orders, restore_phased_
 
 ## How to start
 
-1. **T1 first** — The simulation is the foundation. Use the ready-to-paste script in `retool_simulation_block.py` (or the inline summary in the Builder Guide). In Retool: create a **Python** block named `simulate_all_products`, paste the script, and wire its input to `fetch_products.data`. Run with one product to verify output shape and no numpy/pandas.
-2. **T2 next** — In Retool, create the Creator workflow and add blocks in this order: `fetch_products` (SQL) → `calculate_lag` (SQL) → in parallel: `simulate_all_products` (Python), `shift_sell_orders` (SQL), `shift_buy_orders` (SQL). Then `soft_delete_stocks` (SQL) → `insert_stocks` (SQL). For `insert_stocks`, use the `build_stocks_insert` JS block + SQL pattern described in `plan/README.md` (or Builder Guide Block 8).
+1. **T1 first** — The simulation is the foundation. Use the canonical script in [retool-blocks/simulate_stocks.py](../retool-blocks/simulate_stocks.py). In Retool: add SQL blocks `fetch_product_meta` and `fetch_daily_sales`, then a **Python** block named `simulate_stocks` that reads `fetch_product_meta.data` and `fetch_daily_sales.data` (paste the script from retool-blocks). Run to verify output shape (`data.stocks` array, no numpy/pandas).
+2. **T2 next** — In Retool, create the Creator workflow: `fetch_product_meta` (SQL) + `fetch_daily_sales` (SQL) → `simulate_stocks` (Python) → `soft_delete_stocks` (SQL) → `build_stocks_insert` (JS) → `insert_stocks` (SQL). Use [retool-blocks/](../retool-blocks/) for SQL and JS (fetch_product_meta.sql, fetch_daily_sales.sql, soft_delete_stocks.sql, build_stocks_insert.js, insert_stocks.sql).
 3. **T3** — Add `all_done` (JS join gate), `setup_promotions` (stub), `setup_composed_products` (stub), `replan_agenda` (REST loop). Wire the webhook trigger and optional `dry_run`.
 4. **T4** — Duplicate the Creator workflow to create the Maintainer; change trigger to Cron (02:00 UTC) + webhook for testing. Replace blocks after `all_done` with `delete_manual_buy_orders`, `restore_phased_out_products`, then `replan_agenda`. Set `simulation_end_date` (see Builder Guide “Shared variables”).
 
@@ -32,8 +32,9 @@ T4 (Maintainer: duplicate Creator, add delete_manual_buy_orders, restore_phased_
 | `T3__Creator_Workflow_—_Promotions,_Composed_Products_+_Orchestration.md` | Ticket: all_done, promotions/composed stubs, replan_agenda, full wiring |
 | `T4__Build_the_Maintainer_Workflow_(nightly_cron).md` | Ticket: Maintainer workflow; delete manual BOs; restore phased-out products |
 | `Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md` | Step-by-step: every block’s type, name, code/query, and wiring |
-| `retool_simulation_block.py` | **Ready-to-paste** Retool Python block (pure Python, no numpy/pandas) |
 | `IMPLEMENTATION_ORDER.md` | This file |
+| [retool-blocks/](../retool-blocks/) | **Canonical** SQL + Python + JS blocks (use these in Retool) |
+| [archive/](./archive/) | Superseded synthetic-demand script for reference only |
 
 ## Whitelist note
 

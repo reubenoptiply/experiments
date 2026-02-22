@@ -7,15 +7,17 @@ This folder holds the **brief, tech plan, tickets, and build guide** for the ful
 
 ## Quick start
 
-1. **T1** — Use the ready-to-paste simulation script: [retool_simulation_block.py](./retool_simulation_block.py). In Retool, create a **Python** block named `simulate_all_products`, paste the script, and set its input to `fetch_products.data`.
-2. **T2** — Add SQL blocks (fetch_products → calculate_lag → parallel: simulate + shift_sell_orders + shift_buy_orders → soft_delete_stocks → insert_stocks). For `insert_stocks`, use the JS helper below to build the INSERT from `simulate_all_products.data.stocks`.
+1. **T1** — Use the **canonical** simulation script and SQL in [retool-blocks/](../retool-blocks/): `fetch_product_meta.sql`, `fetch_daily_sales.sql`, [simulate_stocks.py](../retool-blocks/simulate_stocks.py). In Retool, create SQL blocks for product meta and daily sales, then a **Python** block (e.g. `simulate_stocks`) that uses `fetch_product_meta.data` and `fetch_daily_sales.data`; paste [simulate_stocks.py](../retool-blocks/simulate_stocks.py).
+2. **T2** — Add SQL blocks (fetch_product_meta, fetch_daily_sales → simulate_stocks → soft_delete_stocks → build_stocks_insert → insert_stocks). For `insert_stocks`, use [build_stocks_insert.js](../retool-blocks/build_stocks_insert.js) and [insert_stocks.sql](../retool-blocks/insert_stocks.sql).
 3. **T3 / T4** — See IMPLEMENTATION_ORDER and the [Retool Workflow Builder Guide](./Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md).
+
+(An older synthetic-demand script is in [archive/](./archive/) for reference.)
 
 ## JS block: `build_stocks_insert`
 
 Add a **JavaScript** block named `build_stocks_insert` that runs after `simulate_all_products` (or after `soft_delete_stocks` if you prefer). It turns the `stocks` array into one `VALUES (...),(...),...` string so the next SQL block can run a single INSERT.
 
-**Input:** `simulate_all_products.data.stocks` (or the block that holds `{ stocks: [...] }`).
+**Input:** `simulate_stocks.data.stocks` (or the block that holds `{ stocks: [...] }`).
 
 **Output:** Set a Retool workflow variable (e.g. `stocks_values_sql`) or return an object that the `insert_stocks` SQL block can reference.
 
@@ -26,7 +28,7 @@ function esc(s) {
   return "'" + String(s).replace(/'/g, "''") + "'";
 }
 
-const stocks = simulate_all_products?.data?.stocks ?? [];
+const stocks = simulate_stocks?.data?.stocks ?? [];
 const values = stocks.map(r =>
   `(${r.product_id}, ${esc(r.product_uuid)}, ${r.webshop_id}, ${esc(r.webshop_uuid)}, ${r.on_hand}, ${esc(r.date)})`
 ).join(',\n');
@@ -53,8 +55,8 @@ In the **insert_stocks** SQL block, run the query as **raw SQL** and use:
 |------|--------|
 | [EXECUTION_RUNBOOK.md](./EXECUTION_RUNBOOK.md) | Time-boxed tick list to finish Creator + Maintainer (~2.5–3.5 hrs) |
 | [IMPLEMENTATION_ORDER.md](./IMPLEMENTATION_ORDER.md) | Dependency order and how to start (T1→T2→T3→T4) |
-| [retool_simulation_block.py](./retool_simulation_block.py) | Paste-ready Retool Python block (T1); pure Python, no numpy/pandas |
 | [Epic_Brief_—_Optiply_Demo_Account_Simulator.md](./Epic_Brief_—_Optiply_Demo_Account_Simulator.md) | Scope and success criteria |
 | [Tech_Plan_—_Optiply_Demo_Account_Simulator.md](./Tech_Plan_—_Optiply_Demo_Account_Simulator.md) | Architecture and constraints |
 | [T1](T1__Build_the_Simulation_Python_Block_(Retool).md) / [T2](T2__Creator_Workflow_—_SQL_Data_Layer_(stocks_+_sell_orders).md) / [T3](T3__Creator_Workflow_—_Promotions,_Composed_Products_+_Orchestration.md) / [T4](T4__Build_the_Maintainer_Workflow_(nightly_cron).md) | Per-phase tickets and acceptance criteria |
 | [Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md](./Retool_Workflow_Builder_Guide_—_Creator_&_Maintainer.md) | Block-by-block SQL/code and wiring for Creator & Maintainer |
+| [archive/](./archive/) | Superseded script (synthetic demand); canonical blocks are in [retool-blocks/](../retool-blocks/) |
