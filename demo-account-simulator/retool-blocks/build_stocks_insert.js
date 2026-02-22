@@ -5,7 +5,7 @@ const stocks = simulate_stocks?.data?.stocks;
 
 if (!stocks || !Array.isArray(stocks) || stocks.length === 0) {
   console.warn("build_stocks_insert: simulate_stocks.data.stocks is empty or undefined");
-  return { sql_values: "" };
+  return { sql_values: "", full_insert_sql: "", record_set: [] };
 }
 
 const valuesString = stocks
@@ -20,4 +20,9 @@ const valuesString = stocks
   })
   .join(",\n");
 
-return { sql_values: valuesString };
+// Full statement so Retool runs it as one query (avoids VALUES $1 parameterization error)
+const fullInsertSql =
+  "INSERT INTO stocks (product_id, product_uuid, webshop_id, webshop_uuid, on_hand, date)\nVALUES\n  " +
+  valuesString;
+
+return { sql_values: valuesString, full_insert_sql: fullInsertSql, record_set: stocks };
