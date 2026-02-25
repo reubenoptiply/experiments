@@ -1,5 +1,7 @@
 # Retool Python block: simulate_stocks
 # Demand from real fetch_daily_sales data; archetype governs ROP and stockout policy only.
+# All products from fetch_product_meta are simulated (including composed products / kits).
+# Stock is driven by real sales so the stock graph matches the sales graph; Stockout Prone gets one forced stockout in the last 3 months.
 
 import math
 import random
@@ -26,30 +28,42 @@ def build_sales_map(daily_sales):
 
 
 def parse_archetype(name):
-    """Extract text inside (...) and map to canonical archetype string."""
+    """Extract text inside (...) and map to canonical archetype string.
+    Handles nested parens e.g. 'Product (Stockout Prone (Demand))' -> 'Stockout Prone (Demand)'.
+    """
     if not name or "(" not in name or ")" not in name:
         return "stable"
     start = name.index("(") + 1
-    end = name.index(")")
+    end = name.rindex(")")  # last closing paren so nested archetypes work
     if start >= end:
         return "stable"
     extracted = name[start:end].strip()
     if "Stockout Prone" in extracted:
         return "stockout_prone"
-    if "Seasonal Summer" in extracted:
+    if "Seasonal" in extracted and "Summer" in extracted:
         return "seasonal_summer"
-    if "Seasonal Winter" in extracted:
+    if "Seasonal" in extracted and ("Winter" in extracted or "Holiday" in extracted):
         return "seasonal_winter"
     if "Negative Trend" in extracted:
         return "trend_down"
-    if "Positive Trend" in extracted or "Trend" in extracted:
+    if "Positive Trend" in extracted or ("Trend" in extracted and "Negative" not in extracted):
         return "trend"
+    if "Step Change" in extracted and "Up" in extracted:
+        return "step_up"
+    if "Step Change" in extracted and "Down" in extracted:
+        return "step_down"
     if "New Launch" in extracted:
         return "new_launch"
-    if "Obsolete" in extracted:
+    if "Obsolete" in extracted or "Dead" in extracted:
         return "obsolete"
     if "Lumpy" in extracted or "Sporadic" in extracted:
         return "lumpy"
+    if "Outlier" in extracted or "Influencer" in extracted:
+        return "outlier"
+    if "Container Filler" in extracted:
+        return "container_filler"
+    if "Micro-Seasonality" in extracted:
+        return "micro_seasonal"
     return "stable"
 
 
@@ -99,7 +113,7 @@ def simulate_one_product(product_row, product_sales_map, today):
     unit_price = float(product_row.get("purchase_price") or 0)
     supplier_id = int(product_row["supplier_id"]) if product_row.get("supplier_id") is not None else None
     supplier_uuid = str(product_row["supplier_uuid"]) if product_row.get("supplier_uuid") else None
-    archetype = parse_archetype(product_row.get("product_name") or "")
+    archetype = parse_archetype(product_row.get("product_name") or product_row.get("name") or "")
 
     total_sold = sum(product_sales_map.values())
     avg_daily = max(1, total_sold // 366)
@@ -118,6 +132,8 @@ def simulate_one_product(product_row, product_sales_map, today):
         sim_stock = starting_stock + 600
     elif archetype == "lumpy":
         sim_stock = 60
+    elif archetype == "container_filler":
+        sim_stock = starting_stock + int(avg_daily * lead_time * 4)
     else:
         sim_stock = starting_stock + int(avg_daily * lead_time * 2)
 
@@ -129,6 +145,9 @@ def simulate_one_product(product_row, product_sales_map, today):
     stockout_count = 0
     in_stockout = False
     rop_boost_applied = False
+    # Stockout Prone: force one day in the last 3 months to 0 so the stock graph shows a clear stockout
+    LAST_3M_START = 276
+    force_stockout_day = 300 if archetype == "stockout_prone" else -1
 
     start_date = today - timedelta(days=365)
     for day in range(366):
@@ -142,6 +161,14 @@ def simulate_one_product(product_row, product_sales_map, today):
             active_rop = int(lead_time * avg_daily * 2.5)
         if archetype == "stockout_prone":
             active_rop = int(lead_time * avg_daily * 0.6)
+        if archetype == "container_filler":
+            active_rop = int(lead_time * avg_daily * 3.0)
+        if archetype == "micro_seasonal" and curr_date.month in (2, 3, 8, 9):
+            active_rop = int(lead_time * avg_daily * 2.0)
+        if archetype in ("step_up", "trend") and day >= 180:
+            active_rop = int(lead_time * avg_daily * 2.5)
+        if archetype in ("step_down", "trend_down") and day >= 180:
+            active_rop = int(lead_time * avg_daily * 0.8)
         if archetype == "obsolete" and day > 305:
             active_rop = -9999
         if rop_boost_applied:
@@ -180,7 +207,7 @@ def simulate_one_product(product_row, product_sales_map, today):
         else:
             in_stockout = False
 
-        # (e) ROP check and reorder — emit buy_order and track for delivery
+        # (e) ROP check and reorder — emit buy_order and track for delivery (include composed products if they have supplier)
         incoming = sum(qty for (_, qty, _) in pending_deliveries)
         if (sim_stock + incoming) < active_rop and supplier_id is not None and supplier_uuid:
             variance = random.randint(-2, 3)
@@ -201,6 +228,10 @@ def simulate_one_product(product_row, product_sales_map, today):
                 "unit_price": round(unit_price, 2),
             })
             pending_deliveries.append((delivery_day, reorder_qty, order_index))
+
+        # Stockout Prone: force one day in the last 3 months to 0 so the stock graph clearly shows a stockout
+        if force_stockout_day >= 0 and day == force_stockout_day:
+            sim_stock = 0
 
         # (f) Stock row
         stock_rows.append({

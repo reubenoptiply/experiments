@@ -60,7 +60,7 @@ No code needed. Retool generates the webhook URL automatically. Optionally pass 
 SELECT
   wp.id            AS product_id,
   wp.uuid          AS product_uuid,
-  wp.webshop_id,
+  wp.shop_id,
   w.uuid           AS webshop_uuid,
   wp.name,
   wp.selling_price,
@@ -69,10 +69,10 @@ SELECT
   s.uuid           AS supplier_uuid,
   sp.delivery_time
 FROM webshop_products wp
-JOIN webshops w ON w.id = wp.webshop_id
-JOIN supplier_products sp ON sp.product_id = wp.id
+JOIN supplier_products sp ON wp.id = sp.webshop_product_id
 JOIN suppliers s ON s.id = sp.supplier_id
-WHERE wp.webshop_id = 1380
+JOIN webshops w ON w.id = wp.shop_id
+WHERE wp.shop_id = 1380
   AND wp.id IN (
     28666283, 28666284, 28666285, 28666286, 28666287,
     28666288, 28666289, 28666290, 28666291, 28666292,
@@ -289,6 +289,8 @@ After the simulation runs, create buy orders and receipt lines (item deliveries)
 **BO-only path (no stock re-simulation):** When stocks are already in the DB, do **not** run the full stock simulation. Instead: (1) Run **fetch_stocks** (see [fetch_stocks.sql](../retool-blocks/fetch_stocks.sql)) to read existing stock history; (2) Run **simulate_buy_orders_from_stocks** ([simulate_buy_orders_from_stocks.py](../retool-blocks/simulate_buy_orders_from_stocks.py)) with inputs `fetch_product_meta.data`, `fetch_daily_sales.data`, `fetch_stocks.data`. It infers deliveries from stock increases (after sales) and outputs only `buy_orders` and `item_deliveries`; (3) Point **build_buy_order_api_bodies** at `simulate_buy_orders_from_stocks.data` (it already prefers that source when present).
 
 **Setup in Retool:** Copy [build_buy_order_api_bodies.js](../retool-blocks/build_buy_order_api_bodies.js) and [build_receipt_line_bodies.js](../retool-blocks/build_receipt_line_bodies.js). In `build_receipt_line_bodies`, set the variable that holds the **Loop block’s output** (e.g. `post_buy_orders_loop`) to the actual name of your “POST buy orders” Loop block so the script can read the array of responses and extract `buyOrderLineId` from each. If your API returns a different response shape, adjust `getBuyOrderLineIdFromResponse` in that block. Use a delay (e.g. 200 ms) between Loop iterations to respect rate limits.
+
+**Patching `completed` on buy orders:** After creating BOs, set `completed` (when the BO was closed). Use [build_patch_completed_bodies.js](../retool-blocks/build_patch_completed_bodies.js): input = list of created BOs **with ids** (e.g. the POST buy orders Loop’s response array). BOs with `expectedDeliveryDate` in the future are skipped. For the rest: ~80% get `completed` = `expectedDeliveryDate`; ~20% get `completed` = expectedDeliveryDate + 1–5 days (late). Output: `patch_items` = `[{ id, body }]`. Add a **Loop** that PATCHes each: `PATCH https://api.optiply.com/v1/buyOrders/{{ item.id }}?accountId=1380`, body = `item.body`, same JSON:API header. If you only have request bodies (no ids), GET buy orders for the account and use that list, or pass `bo_ids_in_order` (array of ids in same order).
 
 ---
 

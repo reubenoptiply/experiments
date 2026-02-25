@@ -14,10 +14,10 @@ SELECT
   s.id AS supplier_id,
   s.uuid AS supplier_uuid
 FROM webshop_products wp
-JOIN supplier_products sp ON wp.supplier_product_id = sp.id
+JOIN supplier_products sp ON wp.id = sp.webshop_product_id
 JOIN suppliers s ON sp.supplier_id = s.id
-JOIN webshops w ON wp.webshop_id = w.id
-WHERE wp.webshop_id = 1380
+JOIN webshops w ON wp.shop_id = w.id
+WHERE wp.shop_id = 1380
   AND wp.deleted_at IS NULL
   AND wp.id IN (
     28666283, 28666284, 28666285, 28666286, 28666287, 28666288, 28666289, 28666290,
