@@ -63,13 +63,17 @@ This sits at the **order dispatch layer** — the step after a customer approves
 
 ## Cost Comparison: Current vs. Alternatives
 
+> **Key finding:** Most Optiply clients use the **Transus** network (Dutch market leader, 100,000+ partners). This changes the VAN strategy — Transus, not Descartes, is the primary network to target.
+
 | Option | Cost today (~400 orders/month) | Cost at scale (~2,000 orders/month) | Notes |
 |---|---|---|---|
 | **OrderChief (current)** | ~€408/month | ~€2,000/month | Variable, no control |
-| **Orderful Integrated** | $399/month (~€370) | $399/month (~€370) | Flat fee, REST API, US-founded but EU-hosted |
-| **Zenbridge** | $450/month | $450/month | EU-native, EDI-as-API, 1,000 tx/month included |
+| **Transus Direct API** ⭐ | €199.90/month (Premium plan) | €199.90/month | Dutch market leader; most clients already on it; REST API; handles EDIFACT translation |
+| **Orderful Integrated** | $399/month (~€370) | $399/month (~€370) | Flat fee, REST API; meeting Monday — verify Transus network access |
+| **Zenbridge** | $450–850/month | $450–850/month | EU-native, EDI-as-API; verify Transus interconnects |
 | **Comarch EDI** | Quote required | Quote required | European, strong in retail, full-service |
-| **Direct Descartes + custom** | Engineering cost only | ~€100–300/month VAN fees | Best long-term; 3–4 months to build |
+| **Build own + Transus API** | Engineering cost only | ~€200/month VAN fees | Best long-term; 3–4 months to build |
+| ~~AWS B2B Data Interchange~~ | ~~N/A~~ | ~~N/A~~ | ❌ **Does not support EDIFACT** — X12 only. Eliminated. |
 
 ---
 
@@ -118,6 +122,16 @@ graph TD
 
 ## Phase 1 Candidate Services
 
+### ⭐ Transus Direct API (NEW — Primary Candidate)
+- **What it is:** Dutch EDI network, market leader in the Netherlands, 100,000+ trading partners
+- **Why it matters:** Most of Optiply's clients are already on Transus — zero supplier re-onboarding required
+- **Plan:** EDI Premium at €199.90/month — includes REST API access
+- **How it works:** Optiply sends XML/CSV to Transus API; Transus translates to EDIFACT and routes to supplier's mailbox; inbound ORDRSP delivered back via webhook
+- **Cost:** €199.90/month — cheapest option, immediate saving vs. €408/month current spend
+- **Key advantage:** Clients already connected; Dutch company; understands Dutch/EU market
+- **Key risk:** Need to verify API capabilities — can Optiply call Transus programmatically on BO approval? Does Transus support inbound ORDRSP webhooks?
+- **Action:** Contact Transus sales/technical team this week
+
 ### Orderful (US-founded, EU-hosted)
 - **Plan:** Integrated at $399/month (~€370) — flat fee, unlimited trading partners, unlimited transactions
 - **API:** REST API; POST JSON order → Orderful translates to EDIFACT and routes via their network
@@ -150,11 +164,13 @@ graph TD
 
 ## Immediate Actions (Pre-Development)
 
-1. **Request all supplier mapping specs from OrderChief** — GLNs, product code formats, EDIFACT versions, required segments per supplier. This is Optiply's data and must be retrieved before the relationship deteriorates.
-2. **Contact Orderful** — verify which of Optiply's current suppliers (by GLN) are on their network; ask about Mosaic pricing; confirm EU data residency.
-3. **Contact Zenbridge** — as EU-native alternative; ask about Dutch/European supplier coverage and plan pricing for 10–50 partners.
-4. **Contact Descartes directly** — begin the direct partnership conversation now so Phase 2 is ready in 6 months.
+1. **Contact Transus** — verify REST API capabilities for programmatic order sending; ask about inbound ORDRSP webhook support; get onboarding timeline. This is now the #1 priority given client network overlap.
+2. **Monday: Orderful meeting** — key question: are Dutch suppliers on the Transus network accessible via Orderful? If not, Orderful cannot serve most of Optiply's current suppliers.
+3. **Request all supplier mapping specs from OrderChief** — GLNs, product code formats, EDIFACT versions, required segments per supplier. This is Optiply's data and must be retrieved before the relationship deteriorates.
+4. **Contact Zenbridge** — verify Transus network interconnects; ask about Dutch supplier coverage.
 5. **Respond to OrderChief** — buy time; commit to providing the 3-year forecast and request a 60-day transition window regardless of outcome.
+
+> **Eliminated options:** AWS B2B Data Interchange does **not** support EDIFACT (X12 only) — not viable for European suppliers. Stedi's EDIFACT support is in preview only — not production-ready.
 
 ---
 

@@ -359,17 +359,16 @@ For Phase 1 (using a REST API EDI service like Orderful), the transport is simpl
 
 ### Major VANs in Europe
 
+| VAN | Notes |
+|---|---|
+| **Transus** ⭐ | Dutch market leader; 100,000+ partners; most Optiply clients use this network |
+| **Descartes** | Largest pan-European VAN; used by OrderChief today |
+| **OpenText (GXS)** | Global; strong in retail and automotive |
+| **Cleo** | Strong in logistics and 3PL |
+| **Seeburger** | Popular in German-speaking markets |
+| **Comarch** | Strong in Eastern Europe and retail |
 
-| VAN                | Notes                                       |
-| ------------------ | ------------------------------------------- |
-| **Descartes**      | Largest in Europe; used by OrderChief today |
-| **OpenText (GXS)** | Global; strong in retail and automotive     |
-| **Cleo**           | Strong in logistics and 3PL                 |
-| **Seeburger**      | Popular in German-speaking markets          |
-| **Comarch**        | Strong in Eastern Europe and retail         |
-
-
-Most large suppliers are connected to multiple VANs, or their VAN has interconnects with others. Being on Descartes gives you access to the vast majority of European suppliers.
+Most large suppliers are connected to multiple VANs, or their VAN has interconnects with others. **For Optiply specifically, Transus is the most important VAN** — the majority of Optiply's customers and their suppliers are already connected there.
 
 ---
 
@@ -569,6 +568,23 @@ graph TD
 
 These services expose a REST API. You POST a JSON order; they generate EDIFACT and route it via their network. You own the mapping from your internal format to their JSON schema — but they handle all EDIFACT complexity and VAN routing.
 
+#### ⭐ Transus Direct API (Primary candidate for Optiply)
+
+| Attribute | Detail |
+|---|---|
+| **Pricing** | EDI Premium: €199.90/month — includes REST API access |
+| **API** | REST API; send XML/CSV → Transus translates to EDIFACT and routes |
+| **Inbound** | Inbound ORDRSP delivery (verify webhook support) |
+| **EDIFACT messages** | Full EDIFACT support |
+| **European presence** | Dutch company; market leader in Netherlands; 100,000+ partners |
+| **Key advantage** | Most Optiply clients already on Transus — zero supplier re-onboarding |
+| **Key risk** | API capabilities need verification — programmatic trigger and ORDRSP webhook support |
+| **Onboarding** | Potentially days if clients are already connected |
+
+**Cost vs. OrderChief:**
+- Today (~400 orders/month): €199.90 vs. ~€408 — **immediate 50% saving**
+- At scale (2,000 orders/month): €199.90 vs. ~€2,000 — **saves ~€1,800/month**
+
 #### Orderful (US-founded, EU-hosted)
 
 
@@ -644,19 +660,57 @@ Become a direct member of a VAN (Descartes or equivalent). Build your own EDIFAC
 
 ### Comparison Summary
 
-
-| Option                    | Monthly cost (400 orders) | Monthly cost (2,000 orders) | Time to live | EU-native    | Own mapping layer |
-| ------------------------- | ------------------------- | --------------------------- | ------------ | ------------ | ----------------- |
-| OrderChief (current)      | ~€408                     | ~€2,000                     | Already live | ✅            | ❌                 |
-| Orderful Integrated       | ~€370                     | ~€370                       | 1–2 weeks    | ⚠️ EU-hosted | ✅                 |
-| Zenbridge Small           | ~€790                     | ~€790                       | 2–4 weeks    | ✅            | ✅                 |
-| Comarch EDI               | Quote                     | Quote                       | 4–8 weeks    | ✅            | ✅                 |
-| Direct Descartes + custom | Engineering only          | ~€100–300                   | 3–4 months   | ✅            | ✅                 |
+| Option | Monthly cost (400 orders) | Monthly cost (2,000 orders) | Time to live | EU-native | Own mapping layer | Transus access |
+|---|---|---|---|---|---|---|
+| OrderChief (current) | ~€408 | ~€2,000 | Already live | ✅ | ❌ | ✅ (via Descartes) |
+| **Transus Direct API** ⭐ | **€199.90** | **€199.90** | **Days–1 week** | ✅ | ✅ | ✅ Native |
+| Orderful Integrated | ~€370 | ~€370 | 1–2 weeks | ⚠️ EU-hosted | ✅ | ❓ Verify |
+| Zenbridge Small | ~€790 | ~€790 | 2–4 weeks | ✅ | ✅ | ❓ Verify |
+| Comarch EDI | Quote | Quote | 4–8 weeks | ✅ | ✅ | ❓ Verify |
+| Build own + Transus | Engineering only | ~€200 | 3–4 months | ✅ | ✅ | ✅ Native |
+| ~~AWS B2B~~ | ~~N/A~~ | ~~N/A~~ | ~~N/A~~ | ❌ | ❌ | ❌ **No EDIFACT** |
+| ~~Stedi~~ | ~~$500+ min~~ | ~~$500+ min~~ | ~~N/A~~ | ❌ | ❌ | ❓ EDIFACT preview only |
 
 
 ---
 
-## 12. Summary: The Full Stack
+## 12. Key Findings from Strategic Analysis (EDI-deepthink.txt)
+
+A detailed strategic analysis (`file:edi/EDI-deepthink.txt`) evaluated 60+ market data points. Key conclusions relevant to Optiply:
+
+### What the analysis recommended (and what to correct)
+
+| Platform | Analysis recommendation | Optiply reality |
+|---|---|---|
+| **AWS B2B Data Interchange** | Recommended as cheapest ($0.01/txn) | ❌ **Eliminated** — X12 only, no EDIFACT support |
+| **Stedi** | Recommended for speed-to-market | ⚠️ EDIFACT is preview only; $500/month minimum; not production-ready for EU |
+| **Orderful** | Recommended for network connectivity | ⚠️ Valid option; verify Transus network access before committing |
+| **Zenbridge** | Low-cost challenger | ⚠️ Valid option; verify Transus interconnects |
+| **EdiFabric (.NET library)** | Build route for .NET stacks | ✅ Valid for Phase 2 if Optiply has .NET services; zero marginal cost per message |
+
+### The "Embedded EDI" concept (from the analysis)
+
+The analysis introduces a valuable architectural concept: treating EDI as a **background infrastructure layer** invisible to the end user. Key principles:
+
+- **Native UI**: User clicks "Approve" in Optiply. The EDI call happens silently in the background.
+- **Synchronous feedback**: Validation errors surface immediately (not 24-48h later like legacy VANs)
+- **White-labelled**: The EDI provider is invisible; Optiply owns the UX
+- **Gen AI mapping**: LLMs can ingest supplier PDF specs and auto-generate EDIFACT mapping configs — reducing per-supplier onboarding from weeks to hours
+
+This is exactly the model defined in the Core Flows spec (`spec:210b4706-8155-4e68-9744-6e6a758830a0/86cb38ef-f322-4cfb-96dd-cf9061a5787c`).
+
+### The "Strangler Fig" migration pattern
+
+The analysis recommends a phased migration that avoids a hard cutover:
+1. **Sidecar**: Run new EDI path in parallel with OrderChief for 1-2 pilot customers. Compare outputs.
+2. **Expand**: Migrate customers in batches. Keep OrderChief as fallback.
+3. **Cutover**: Decommission OrderChief once all customers are migrated and validated.
+
+This is the safest approach given the critical timeline and zero-disruption requirement.
+
+---
+
+## 13. Summary: The Full Stack
 
 ```mermaid
 graph TD
