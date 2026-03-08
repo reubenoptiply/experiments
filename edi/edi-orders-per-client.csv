@@ -1,0 +1,77 @@
+hubspot_id,account_name,month,base_fees,usage_fees,edi_fees,discounts,edi_orders_sent,usage_without_edi_fee
+3791596243,Babydrogist.nl,2026-02,0.0,0.0,0.0,0.0,6.0,YES
+3791596243,Babydrogist.nl,2026-01,0.0,0.0,0.0,0.0,4.0,YES
+3791596243,Babydrogist.nl,2025-12,0.0,0.0,0.0,0.0,2.0,YES
+3791596243,Babydrogist.nl,2025-11,0.0,0.0,0.0,0.0,3.0,YES
+3791596243,Babydrogist.nl,2025-10,0.0,0.0,0.0,0.0,5.0,YES
+3791596243,Babydrogist.nl,2025-09,0.0,0.0,0.0,0.0,5.0,YES
+3791596243,Babydrogist.nl,2025-08,0.0,0.0,0.0,0.0,2.0,YES
+3791596243,Babydrogist.nl,2025-07,0.0,0.0,0.0,0.0,3.0,YES
+3791596243,Babydrogist.nl,2025-05,0.0,0.0,0.0,0.0,2.0,YES
+3791596243,Babydrogist.nl,2025-04,0.0,250.0,0.0,0.0,4.0,YES
+3791596243,Babydrogist.nl,2025-02,0.0,0.0,0.0,0.0,5.0,YES
+3791596243,Babydrogist.nl,2025-01,0.0,0.0,0.0,0.0,7.0,YES
+3791596243,Babydrogist.nl,2024-12,0.0,0.0,0.0,0.0,5.0,YES
+3791596243,Babydrogist.nl,2024-11,0.0,0.0,0.0,0.0,5.0,YES
+3791596243,Babydrogist.nl,2024-10,0.0,0.0,0.0,0.0,10.0,YES
+3791596243,Babydrogist.nl,2024-09,0.0,0.0,0.0,0.0,6.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2026-03,801.0,261.0,0.0,1062.0,0.0,NO
+288978960,Drogisterij Parfumerie Marjo B.V.,2026-02,0.0,0.0,0.0,0.0,15.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2026-01,0.0,0.0,0.0,0.0,23.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-12,0.0,0.0,0.0,0.0,28.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-11,0.0,0.0,0.0,0.0,24.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-10,0.0,0.0,0.0,0.0,25.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-09,0.0,0.0,0.0,0.0,46.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-08,0.0,0.0,0.0,0.0,34.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-07,0.0,0.0,0.0,0.0,32.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-06,0.0,0.0,0.0,0.0,37.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-05,0.0,0.0,0.0,0.0,34.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-04,0.0,0.0,0.0,0.0,23.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-03,0.0,0.0,0.0,0.0,41.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-02,0.0,0.0,0.0,0.0,32.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2025-01,0.0,0.0,0.0,0.0,29.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2024-12,0.0,0.0,0.0,0.0,22.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2024-11,0.0,0.0,0.0,0.0,32.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2024-10,0.0,0.0,0.0,0.0,34.0,YES
+288978960,Drogisterij Parfumerie Marjo B.V.,2024-09,0.0,0.0,0.0,0.0,25.0,YES
+39253451407,Drogisterij web B.V.,2026-02,0.0,0.0,0.0,0.0,93.0,YES
+39253451407,Drogisterij web B.V.,2026-01,0.0,0.0,0.0,0.0,99.0,YES
+39253451407,Drogisterij web B.V.,2025-12,0.0,0.0,0.0,0.0,90.0,YES
+39253451407,Drogisterij web B.V.,2025-11,0.0,0.0,0.0,0.0,96.0,YES
+39253451407,Drogisterij web B.V.,2025-10,0.0,0.0,0.0,0.0,97.0,YES
+39253451407,Drogisterij web B.V.,2025-09,1473.45,2715.8,500.0,0.0,80.0,NO
+39253451407,Drogisterij web B.V.,2025-08,0.0,0.0,0.0,0.0,75.0,YES
+39253451407,Drogisterij web B.V.,2025-07,0.0,0.0,0.0,0.0,77.0,YES
+39253451407,Drogisterij web B.V.,2025-06,0.0,0.0,0.0,0.0,73.0,YES
+39253451407,Drogisterij web B.V.,2025-05,0.0,0.0,0.0,0.0,71.0,YES
+39253451407,Drogisterij web B.V.,2025-04,0.0,0.0,0.0,0.0,72.0,YES
+39253451407,Drogisterij web B.V.,2025-03,0.0,0.0,0.0,0.0,76.0,YES
+39253451407,Drogisterij web B.V.,2025-02,0.0,0.0,0.0,0.0,71.0,YES
+39253451407,Drogisterij web B.V.,2025-01,0.0,0.0,0.0,0.0,73.0,YES
+39253451407,Drogisterij web B.V.,2024-12,0.0,0.0,0.0,0.0,73.0,YES
+39253451407,Drogisterij web B.V.,2024-11,0.0,0.0,0.0,0.0,60.0,YES
+39253451407,Drogisterij web B.V.,2024-10,0.0,0.0,0.0,0.0,6.0,YES
+290122295,Mastertools B.V.,2026-02,1640.65,677.16,0.0,0.0,8.0,YES
+290122295,Mastertools B.V.,2026-01,1640.65,677.16,0.0,0.0,45.0,YES
+290122295,Mastertools B.V.,2025-12,1640.65,677.16,0.0,0.0,40.0,YES
+290122295,Mastertools B.V.,2025-11,1640.65,677.16,0.0,0.0,30.0,YES
+290122295,Mastertools B.V.,2025-10,1640.65,677.16,0.0,0.0,40.0,YES
+290122295,Mastertools B.V.,2025-09,1640.65,677.16,0.0,0.0,25.0,YES
+290122295,Mastertools B.V.,2025-08,1640.65,677.16,0.0,0.0,35.0,YES
+290122295,Mastertools B.V.,2025-07,1640.65,677.16,0.0,0.0,32.0,YES
+290122295,Mastertools B.V.,2025-06,1640.65,677.16,0.0,0.0,38.0,YES
+290122295,Mastertools B.V.,2025-05,1640.65,677.16,0.0,0.0,20.0,YES
+290122295,Mastertools B.V.,2025-04,1640.65,677.16,0.0,0.0,5.0,YES
+290122295,Mastertools B.V.,2025-03,1570.0,648.0,0.0,0.0,10.0,YES
+290122295,Mastertools B.V.,2025-02,1570.0,648.0,0.0,0.0,19.0,YES
+290122295,Mastertools B.V.,2025-01,0.0,0.0,0.0,0.0,22.0,YES
+290122295,Mastertools B.V.,2024-12,0.0,0.0,0.0,0.0,24.0,YES
+290122295,Mastertools B.V.,2024-11,0.0,0.0,0.0,0.0,25.0,YES
+290122295,Mastertools B.V.,2024-10,1570.0,648.0,0.0,0.0,26.0,YES
+290122295,Mastertools B.V.,2024-09,0.0,0.0,0.0,0.0,15.0,YES
+2481767306,Mtools BV,2026-02,0.0,815.1,0.0,0.0,0.0,NO
+2481767306,Mtools BV,2026-01,0.0,815.1,0.0,0.0,0.0,NO
+2481767306,Mtools BV,2025-12,0.0,815.1,0.0,0.0,0.0,NO
+2481767306,Mtools BV,2025-11,0.0,815.1,0.0,0.0,0.0,NO
+2481767306,Mtools BV,2025-05,0.0,35.1,0.0,0.0,0.0,NO
+2481767306,Mtools BV,2024-10,0.0,780.0,0.0,0.0,0.0,NO
