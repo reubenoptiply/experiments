@@ -99,6 +99,42 @@ def infer_buy_orders_one_product(product_row, product_sales_map, product_stock_s
     return buy_orders, item_deliveries
 
 
+def build_active_assembly_orders(assembly_product_rows, placed_start, placed_end, days_until_expected, quantity=10):
+    """Build a couple of assembly orders placed between placed_start and placed_end (dates),
+    with expected_delivery_date = placed + days_until_expected. No item_deliveries (stay active)."""
+    if not assembly_product_rows:
+        return []
+    orders = []
+    # Two orders: e.g. placed on day 1 and day 5 of the range
+    placed_dates = [placed_start, placed_start + timedelta(days=min(4, (placed_end - placed_start).days))]
+    for i, placed_dt in enumerate(placed_dates):
+        if placed_dt > placed_end:
+            continue
+        product_row = assembly_product_rows[i % len(assembly_product_rows)]
+        p_id = int(product_row["product_id"])
+        expected_dt = placed_dt + timedelta(days=days_until_expected)
+        placed_ts = placed_dt.strftime("%Y-%m-%d") + " 00:00:02"
+        expected_ts = expected_dt.strftime("%Y-%m-%d") + " 00:00:02"
+        unit_price = round(float(product_row.get("purchase_price") or 0), 2)
+        supplier_id = product_row.get("supplier_id")
+        supplier_uuid = product_row.get("supplier_uuid")
+        if supplier_id is None or not supplier_uuid:
+            continue
+        orders.append({
+            "webshop_id": 1380,
+            "webshop_uuid": str(product_row["webshop_uuid"]),
+            "supplier_id": int(supplier_id),
+            "supplier_uuid": str(supplier_uuid),
+            "placed": placed_ts,
+            "expected_delivery_date": expected_ts,
+            "product_id": p_id,
+            "product_uuid": str(product_row["product_uuid"]),
+            "quantity": quantity,
+            "unit_price": unit_price,
+        })
+    return orders
+
+
 # --- Retool entry point (bindings: fetch_product_meta.data, fetch_daily_sales.data, fetch_stocks.data) ---
 products = fetch_product_meta.data
 daily_sales = fetch_daily_sales.data
@@ -117,9 +153,9 @@ stock_series = build_stock_series(stocks_rows)
 all_buy_orders = []
 all_item_deliveries = []
 
-for product_row in products:
-    if int(product_row["product_id"]) not in ASSEMBLY_PRODUCT_IDS:
-        continue
+assembly_product_rows = [p for p in products if int(p["product_id"]) in ASSEMBLY_PRODUCT_IDS]
+
+for product_row in assembly_product_rows:
     p_id = int(product_row["product_id"])
     product_sales_map = sales_map.get(p_id, {})
     product_stock_series = stock_series.get(p_id, [])
@@ -130,6 +166,15 @@ for product_row in products:
         d = dict(d)
         d["order_index"] = base_index + d["order_index"]
         all_item_deliveries.append(d)
+
+# Add a couple of active assembly orders: placed March 9–17, expected_delivery_date = placed + 5 days (no completed)
+ACTIVE_PLACED_START = datetime(2025, 3, 9)
+ACTIVE_PLACED_END = datetime(2025, 3, 17)
+active_orders = build_active_assembly_orders(
+    assembly_product_rows, ACTIVE_PLACED_START, ACTIVE_PLACED_END, days_until_expected=5
+)
+all_buy_orders.extend(active_orders)
+# No item_deliveries for active orders — they are not yet delivered
 
 return {
     "assembly_orders": all_buy_orders,
