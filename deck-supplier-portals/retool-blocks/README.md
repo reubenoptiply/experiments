@@ -4,37 +4,81 @@ Copy these files into your Retool Workflows and Database resources to implement 
 
 **Context:** [context-and-implementation.md](../context-and-implementation.md), [tech-plan-retool.md](../tech-plan-retool.md).
 
+**Flowcharts:** [WORKFLOW_FLOWCHARTS.md](./WORKFLOW_FLOWCHARTS.md) — index and where each Deck API is called. Detailed flows: [WORKFLOW_A_deck_submit_order.md](./WORKFLOW_A_deck_submit_order.md), [WORKFLOW_B_deck_webhook_receiver.md](./WORKFLOW_B_deck_webhook_receiver.md), [WORKFLOW_C_deck_job_timeout_check.md](./WORKFLOW_C_deck_job_timeout_check.md).
+
 ---
 
 ## 1. Setup: Retool DB schema
 
 Run once in your **Retool Database** resource:
 
-- **schema_deck_tables.sql** — Creates `deck_jobs`, `supplier_portal_config`, `sku_mappings`.
+- **schema_deck_tables.sql** — Creates `deck_jobs`, `deck_supplier_portal_config`, `deck_sku_mappings`.
 
-Then seed pilot data: one row in `supplier_portal_config` (supplier_id, supplier_name, source_guid, is_active) and rows in `sku_mappings` as needed.
+Then seed pilot data: one row in `deck_supplier_portal_config` (supplier_id, supplier_name, source_guid, is_active) and rows in `deck_sku_mappings` as needed.
 
 ---
 
 ## 2. Workflow A: deck-submit-order (manual trigger)
 
-Triggered by the app when the user clicks "Send Selected to Supplier Portal". Inputs: `bo_ids` (array), `customer_id`.
+Triggered by the app when the user clicks "Send to Supplier Portal" for a single BO. Inputs: `bo_id`, `customer_id`, `supplier_id`. **One job per buy order** (each BO can have many line items / BOLs).
+
+### Triggering efficiently (no editing SQL with BO IDs)
+
+Pass the **selected BO IDs from the app** into the workflow as **Workflow run input** (trigger parameters). The workflow then binds those parameters in every block — you never paste BO IDs into SQL.
+
+**1. In the Retool App**
+
+- Add a **Table** that loads approved BOs (e.g. query `fetch_approved_bos_optiply` or an Optiply resource).
+- Enable **Row selection** (multi-select) on the table.
+- Add a **Button** “Send Selected to Supplier Portal” that **runs the workflow** with the selection as input.
+
+**2. Workflow trigger: define input parameters**
+
+In Workflow A, open the **trigger** block and add **Workflow input** (or “Run workflow” input) parameters, for example:
+
+| Parameter   | Type   | Description |
+|------------|--------|-------------|
+| `bo_id`      | string | One buy order ID |
+| `customer_id` | string | Customer ID for this BO |
+| `supplier_id` | string | Supplier ID for this BO |
+
+**3. App → Workflow: what to pass**
+
+From the app, when running the workflow, pass:
+
+- **Single selection:** `bo_id`: `table1.selectedRow.bo_id`, `customer_id`: `table1.selectedRow.customer_id`, `supplier_id`: `table1.selectedRow.supplier_id`.
+- **Multiple selection (one job per BO):** Run the workflow once per row (e.g. loop over `table1.selectedRows`) passing each row's `bo_id`, `customer_id`, `supplier_id`.
+
+**4. In the workflow: bind blocks to trigger input**
+
+In each block, bind parameters to the **trigger’s output** (often `trigger.data` or the name of your trigger block, e.g. `startTrigger`). Retool Workflows expose run input differently by version; typical patterns:
+
+- **If the trigger exposes run input as an object:**  
+  - `bo_id` → `{{ startTrigger.bo_id }}` (or `startTrigger.runInput.bo_id`)  
+  - `supplier_id` → `{{ startTrigger.supplier_id }}`  
+  - `customer_id` → `{{ startTrigger.customer_id }}`
+
+- **SQL blocks:** bind `:bo_id` → `{{ startTrigger.bo_id }}`, `:supplier_id` and `:customer_id` similarly. **insert_deck_job** uses a single `:bo_id`, not an array.
+
+- **JS blocks:** set query inputs `lineItems`, `skuMappings`, etc. to the previous block outputs; for values that come from the app (e.g. `currencySymbol`), you can use `{{ startTrigger.currencySymbol }}` or a constant.
+
+Result: the app chooses which BO(s); the workflow receives one `bo_id` per run and no SQL is edited with IDs.
 
 **Order and dependencies:**
 
 | Step | Block | Resource | Notes |
 |------|--------|----------|--------|
-| 1 | fetch_bo_line_items_optiply.sql | Optiply Postgres | Bind `bo_ids`. Returns line items with quantity, unit_price, optiply_sku, supplier_sku. |
-| 2 | fetch_supplier_portal_config.sql | Retool DB | Bind `supplier_id` (from first BO or grouped). Get source_guid. |
+| 1 | fetch_bo_line_items_optiply.sql | Optiply Postgres | Bind `bo_id`. Returns line items (BOLs) with quantity, unit_price, optiply_sku, supplier_sku. |
+| 2 | fetch_supplier_portal_config.sql | Retool DB | Bind `supplier_id`. Get source_guid. |
 | 3 | fetch_sku_mappings.sql | Retool DB | Bind `supplier_id`. |
 | 4 | transform_bo_to_deck_items.js | — | Inputs: `fetch_bo_line_items_optiply.data`, `fetch_sku_mappings.data`, `currencySymbol` (e.g. "€"). Output: `{ items }`. |
 | 5 | check_in_flight_jobs.sql | Retool DB | Bind `supplier_id`. If returns any rows, block or return error. |
-| 6 | insert_deck_job.sql | Retool DB | Bind supplier_id, customer_id, bo_ids (JSON array), items (from step 4). Status = connecting. |
+| 6 | insert_deck_job.sql | Retool DB | Bind supplier_id, customer_id, bo_id (single), items (from step 4). Status = connecting. |
 | 7 | build_ensure_connection_body.js | — | Inputs: source_guid (from config), username/password (env vars). Output: `{ body }`. |
 | 8 | **HTTP: POST Deck** | — | URL: `https://sandbox.deck.co/api/v1/jobs/submit` (or live). Headers: `x-deck-client-id`, `x-deck-secret`. Body: step 7. |
 | 9 | update_deck_job.sql | Retool DB | Set job_guid from Deck response (response.job_guid) WHERE id = inserted job id. |
 
-**Group by supplier:** A batch may span multiple suppliers. Run the flow once per supplier group (group BOs by supplier_id, then for each group run steps 2–9). One Deck job per supplier.
+**One BO per run:** Each workflow run processes one buy order. To send multiple BOs, run the workflow once per BO from the app (e.g. loop over selected rows).
 
 ---
 
@@ -78,8 +122,8 @@ Trigger: **Schedule** (e.g. every 15 minutes).
 
 ## 5. App: Approved BOs and filters
 
-- **submitted_bo_ids.sql** (Retool DB) — Returns BO IDs already in deck_jobs (not failed). Use to filter approved BOs in the app or in fetch_approved_bos_optiply.
-- **fetch_approved_bos_optiply.sql** (Optiply DB) — Approved BOs. Optionally exclude IDs from submitted_bo_ids (e.g. in a combined query or filter in UI).
+- **submitted_bo_ids.sql** (Retool DB) — Returns bo_id list already in deck_jobs (not failed). Filter approved BOs in the app so already-submitted BOs are excluded or disabled.
+- **fetch_approved_bos_optiply.sql** (Optiply DB) — Approved BOs. Filter in app by submitted_bo_ids if needed.
 
 Adjust Optiply table/column names in the SQL files to match your Postgres schema (`buy_orders`, `buy_order_lines`, `products`, `suppliers`).
 
@@ -89,10 +133,10 @@ Adjust Optiply table/column names in the SQL files to match your Postgres schema
 
 | File | Type | Purpose |
 |------|------|--------|
-| schema_deck_tables.sql | SQL (Retool DB) | DDL for deck_jobs, supplier_portal_config, sku_mappings |
+| schema_deck_tables.sql | SQL (Retool DB) | DDL for deck_jobs, deck_supplier_portal_config, deck_sku_mappings |
 | fetch_approved_bos_optiply.sql | SQL (Optiply) | Approved BOs list |
-| fetch_bo_line_items_optiply.sql | SQL (Optiply) | Line items for given bo_ids |
-| submitted_bo_ids.sql | SQL (Retool DB) | BO IDs already submitted |
+| fetch_bo_line_items_optiply.sql | SQL (Optiply) | Line items for one bo_id |
+| submitted_bo_ids.sql | SQL (Retool DB) | bo_id list already submitted |
 | fetch_supplier_portal_config.sql | SQL (Retool DB) | Config by supplier_id |
 | fetch_sku_mappings.sql | SQL (Retool DB) | SKU mapping by supplier_id |
 | check_in_flight_jobs.sql | SQL (Retool DB) | In-flight jobs for supplier (block duplicate submit) |

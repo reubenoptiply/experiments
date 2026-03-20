@@ -50,7 +50,7 @@ sequenceDiagram
 | State store         | Retool DB                                 | Simple, built-in, no external dependencies                                 |
 | Credentials         | Retool env vars                           | 1 pilot customer, keep it simple                                           |
 | Webhook handler     | Single Workflow B for all webhook types   | Deck sends all webhooks to one URL; branch on `webhook_code`               |
-| Multi-supplier      | `supplier_portal_config` table from day 1 | Multiple portals required; `source_guid` must be configurable per supplier |
+| Multi-supplier      | `deck_supplier_portal_config` table from day 1 | Multiple portals required; `source_guid` must be configurable per supplier |
 | Notifications       | Retool App polling + Slack                | User notified in-app and async                                             |
 | MFA                 | Not supported in pilot                    | Ensure pilot supplier portal has no MFA                                    |
 
@@ -60,8 +60,8 @@ sequenceDiagram
 A batch of BOs may span multiple suppliers. Each supplier has its own Deck `source_guid` (portal identifier) and its own SKU format. This means:
 
 - **One Deck job per supplier** — BOs are grouped by supplier before submission
-- `**supplier_portal_config` table** must exist from day 1 (even with env var credentials)
-- `**sku_mappings` table** maps Optiply internal SKUs to supplier-specific SKUs per supplier
+- `**deck_supplier_portal_config` table** must exist from day 1 (even with env var credentials)
+- `**deck_sku_mappings` table** maps Optiply internal SKUs to supplier-specific SKUs per supplier
 
 ### Failure Modes & Recovery
 
@@ -111,10 +111,10 @@ pending → connecting → adding_items → completed
          → failed
 ```
 
-#### `supplier_portal_config` — Per-Supplier Deck Configuration
+#### `deck_supplier_portal_config` — Per-Supplier Deck Configuration
 
 ```
-supplier_portal_config
+deck_supplier_portal_config
 ─────────────────────────────────────────────────────
 id              uuid          PRIMARY KEY
 supplier_id     string        Optiply supplier ID (foreign key reference)
@@ -126,10 +126,10 @@ created_at      timestamp
 
 > **Note:** Credentials (`username`, `password`) are stored as Retool env vars for the pilot. In production, these move to a secure vault or Optiply's credential store.
 
-#### `sku_mappings` — Optiply SKU → Supplier SKU
+#### `deck_sku_mappings` — Optiply SKU → Supplier SKU
 
 ```
-sku_mappings
+deck_sku_mappings
 ─────────────────────────────────────────────────────
 id              uuid          PRIMARY KEY
 supplier_id     string        Which supplier this mapping applies to
@@ -209,8 +209,8 @@ graph TD
 1. **Fetch BO line items** — query Optiply DB: join `buy_order_lines` + `products` for the given `bo_ids`
 2. **Group by supplier** — split items by `supplier_id` (one Deck job per supplier)
 3. **For each supplier group:**
-  a. **Look up `supplier_portal_config**` — get `source_guid`, check `is_active`  
-   b. **Map SKUs** — query `sku_mappings` table; fall back to `products.supplier_sku` if no mapping exists  
+  a. **Look up `deck_supplier_portal_config**` — get `source_guid`, check `is_active`  
+   b. **Map SKUs** — query `deck_sku_mappings` table; fall back to `products.supplier_sku` if no mapping exists  
    c. **Transform items** — format `expected_price` as `"€XX.XX"` (include currency symbol)  
    d. **Check for in-flight jobs** — query `deck_jobs` for existing `connecting` or `adding_items` jobs for this supplier; block if found  
    e. **Insert `deck_job**` — status: `connecting`, store `bo_ids`, `items`, `supplier_id`, `customer_id`  
@@ -277,12 +277,12 @@ graph TD
 **Tables to create in Retool DB:**
 
 - `deck_jobs` (state machine — see Data Model)
-- `supplier_portal_config` (per-supplier Deck config)
-- `sku_mappings` (SKU translation per supplier)
+- `deck_supplier_portal_config` (per-supplier Deck config)
+- `deck_sku_mappings` (SKU translation per supplier)
 
 **Seed data for pilot:**
 
-- Insert 1 row in `supplier_portal_config` with the pilot supplier's `source_guid`
+- Insert 1 row in `deck_supplier_portal_config` with the pilot supplier's `source_guid`
 - Insert SKU mappings for pilot supplier's product catalog
 
 ---
