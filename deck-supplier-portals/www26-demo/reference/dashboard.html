@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WWW26 Demo — Dashboard (reference)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #f4f5f7; }
+    .header { background: #1a1a2e; color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { margin: 0; font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .badge { background: #7c3aed; color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .container { max-width: 960px; margin: 24px auto; padding: 0 20px; }
+    .summary-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .summary-card { background: white; border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 140px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center; }
+    .summary-card .value { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .summary-card .label { font-size: 12px; color: #888; margin-top: 4px; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .card h2 { margin: 0 0 14px; font-size: 14px; color: #333; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8f9fa; text-align: left; padding: 8px 12px; color: #555; font-weight: 600; border-bottom: 2px solid #eee; }
+    td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; color: #333; }
+    .btn-submit { background: #7c3aed; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 20px auto 0; }
+    .supplier-tag { display: inline-flex; align-items: center; gap: 6px; background: #f0ebff; color: #7c3aed; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛒 Optiply — Supplier Portal Automation</h1>
+    <span class="badge">DEMO</span>
+  </div>
+  <div class="container">
+    <div class="summary-row">
+      <div class="summary-card">
+        <div class="value"><span class="supplier-tag">🏪 Hairaction</span></div>
+        <div class="label">Supplier Portal</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">5</div>
+        <div class="label">Items to Order</div>
+      </div>
+      <div class="summary-card">
+        <div class="value">€ 487.30</div>
+        <div class="label">Total Order Value</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📦 Buy Order — BO-2026-0412</h2>
+      <table>
+        <thead>
+          <tr><th>SKU</th><th>Product</th><th>Qty</th><th>Expected Price</th><th>Line Total</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>HA-2041</td><td>Schwarzkopf BC Color Freeze Shampoo 250ml</td><td>12</td><td>€4.85</td><td>€58.20</td></tr>
+          <tr><td>HA-3087</td><td>Redken All Soft Conditioner 300ml</td><td>8</td><td>€11.20</td><td>€89.60</td></tr>
+          <tr><td>HA-1556</td><td>Wella Professionals Oil Reflections Shampoo 1000ml</td><td>4</td><td>€18.90</td><td>€75.60</td></tr>
+          <tr><td>HA-4210</td><td>L'Oréal Serie Expert Vitamino Color Masque 250ml</td><td>6</td><td>€9.45</td><td>€56.70</td></tr>
+          <tr><td>HA-0893</td><td>Moroccanoil Treatment Oil 100ml</td><td>5</td><td>€41.44</td><td>€207.20</td></tr>
+        </tbody>
+      </table>
+      <button type="button" class="btn-submit" data-element-id="submit-btn">🚀 Submit to Supplier Portal</button>
+    </div>
+  </div>
+</body>
+</html>

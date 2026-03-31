@@ -7,6 +7,7 @@ Detailed flowcharts and block-by-block instructions are in **one markdown per wo
 | **A** | [WORKFLOW_A_deck_submit_order.md](./WORKFLOW_A_deck_submit_order.md) | Manual / Run from app | **EnsureConnection** only |
 | **B** | [WORKFLOW_B_deck_webhook_receiver.md](./WORKFLOW_B_deck_webhook_receiver.md) | Webhook (Deck POST) | **AddItemsToCart**, **CloseConnection** |
 | **C** | [WORKFLOW_C_deck_job_timeout_check.md](./WORKFLOW_C_deck_job_timeout_check.md) | Schedule | None |
+| **WWW26 demo** | [WORKFLOW_WWW26_Demo.md](./WORKFLOW_WWW26_Demo.md) | App + same A/B Deck pattern | **EnsureConnection** in demo submit workflow; **AddItemsToCart** + **CloseConnection** in B; optional **Send Email** for `www26-demo` jobs |
 
 ---
 

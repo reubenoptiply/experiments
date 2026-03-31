@@ -6,6 +6,8 @@ Copy these files into your Retool Workflows and Database resources to implement 
 
 **Flowcharts:** [WORKFLOW_FLOWCHARTS.md](./WORKFLOW_FLOWCHARTS.md) — index and where each Deck API is called. Detailed flows: [WORKFLOW_A_deck_submit_order.md](./WORKFLOW_A_deck_submit_order.md), [WORKFLOW_B_deck_webhook_receiver.md](./WORKFLOW_B_deck_webhook_receiver.md), [WORKFLOW_C_deck_job_timeout_check.md](./WORKFLOW_C_deck_job_timeout_check.md).
 
+**WWW26 fair demo (Hairaction):** [WORKFLOW_WWW26_Demo.md](./WORKFLOW_WWW26_Demo.md) — hardcoded BO, email, app polling; static wireframes in [../www26-demo/](../www26-demo/).
+
 ---
 
 ## 1. Setup: Retool DB schema
@@ -159,5 +161,22 @@ Adjust Optiply table/column names in the SQL files to match your Postgres schema
 - `DECK_CLIENT_ID`, `DECK_SECRET` — Deck API (do not hardcode).
 - `DECK_SUPPLIER_USERNAME`, `DECK_SUPPLIER_PASSWORD` — Pilot supplier portal credentials (or per-customer in production).
 - `SLACK_WEBHOOK_URL` — For timeout and error notifications.
+- `WWW26_DEMO_NOTIFY_EMAIL` (optional) — Inbox for the WWW26 demo Send Email block ([WORKFLOW_WWW26_Demo.md](./WORKFLOW_WWW26_Demo.md)).
 
 Use sandbox (`https://sandbox.deck.co/api/v1/jobs/submit`) or live (`https://live.deck.co/api/v1/jobs/submit`) as appropriate.
+
+---
+
+## 8. WWW26 demo blocks (Hairaction / fair recording)
+
+| File | Purpose |
+|------|---------|
+| [www26_hardcoded_buy_order.js](./www26_hardcoded_buy_order.js) | Hardcoded BO-2026-0412 line items + Deck `items` payload |
+| [www26_merge_stored_items_for_email.js](./www26_merge_stored_items_for_email.js) | Job `items` JSON → named `lineItems` for email |
+| [build_www26_email_html.js](./build_www26_email_html.js) | Transactional HTML email `subject` + `html` |
+| [www26_format_results_for_table.js](./www26_format_results_for_table.js) | Merge `results` + catalog → table rows for the app |
+| [fetch_www26_latest_demo_job.sql](./fetch_www26_latest_demo_job.sql) | Poll latest job where `customer_id = 'www26-demo'` |
+
+Full wiring: **[WORKFLOW_WWW26_Demo.md](./WORKFLOW_WWW26_Demo.md)**.
+
+**Sample Retool DB seed (Hairaction):** [sample_data_hairaction_deck.sql](./sample_data_hairaction_deck.sql) — `deck_supplier_portal_config` + example `deck_jobs` row.

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WWW26 Demo — Progress &amp; results (reference)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #f4f5f7; }
+    .header { background: #1a1a2e; color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { margin: 0; font-size: 17px; font-weight: 600; }
+    .badge { background: #7c3aed; color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .container { max-width: 960px; margin: 24px auto; padding: 0 20px; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .card h2 { margin: 0 0 14px; font-size: 14px; color: #333; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .progress-steps { display: flex; gap: 0; margin-bottom: 24px; align-items: flex-start; flex-wrap: wrap; }
+    .step { flex: 1; text-align: center; padding: 12px 8px; position: relative; min-width: 72px; }
+    .step .dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .step.done .dot { background: #dcfce7; color: #16a34a; }
+    .step.active .dot { background: #dbeafe; color: #2563eb; }
+    .step.pending .dot { background: #f3f4f6; color: #9ca3af; }
+    .step .label { font-size: 11px; color: #666; }
+    .step.done .label { color: #16a34a; font-weight: 600; }
+    .step.active .label { color: #2563eb; font-weight: 600; }
+    .connector { height: 2px; background: #e5e7eb; flex: 0 0 24px; margin-top: 24px; }
+    .connector.done { background: #16a34a; }
+    .screenshot-area { background: #f8f9fa; border: 2px dashed #d1d5db; border-radius: 8px; padding: 40px; text-align: center; color: #888; font-size: 13px; margin-bottom: 20px; min-height: 200px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8f9fa; text-align: left; padding: 8px 12px; color: #555; font-weight: 600; border-bottom: 2px solid #eee; }
+    td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; color: #333; }
+    .status-ok { color: #16a34a; font-weight: 600; }
+    .status-warn { color: #d97706; font-weight: 600; }
+    .status-fail { color: #dc2626; font-weight: 600; }
+    .email-preview { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px 20px; margin-top: 16px; }
+    .email-preview .subject { font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+    .email-preview .body { font-size: 13px; color: #555; line-height: 1.6; }
+    .email-preview .cta { display: inline-block; background: #7c3aed; color: white; padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; text-decoration: none; margin-top: 10px; }
+    .banner { padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .banner-success { background: #dcfce7; color: #16a34a; }
+    .banner-email { background: #dbeafe; color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛒 Optiply — Supplier Portal Automation</h1>
+    <span class="badge">DEMO</span>
+  </div>
+  <div class="container">
+    <div class="card">
+      <h2>⚡ Order Progress — Hairaction</h2>
+      <div class="progress-steps">
+        <div class="step done"><div class="dot">✓</div><div class="label">Connected</div></div>
+        <div class="connector done"></div>
+        <div class="step done"><div class="dot">✓</div><div class="label">Items Added</div></div>
+        <div class="connector done"></div>
+        <div class="step done"><div class="dot">✓</div><div class="label">Results</div></div>
+        <div class="connector done"></div>
+        <div class="step done"><div class="dot">✓</div><div class="label">Email Sent</div></div>
+      </div>
+      <div class="screenshot-area">
+        <div style="font-size: 36px;">🤖</div>
+        <div><strong>Deck agent screenshot</strong></div>
+        <div>Replace with rotating images from <code>assets.md</code></div>
+      </div>
+    </div>
+
+    <div class="banner banner-success">✅ Order complete — 4/5 items added to cart</div>
+
+    <div class="card">
+      <h2>📊 Results — hairaction.nl</h2>
+      <table>
+        <thead>
+          <tr><th>SKU</th><th>Product</th><th>Qty</th><th>Expected</th><th>Actual</th><th>Stock</th><th>Price</th><th>Cart</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>HA-2041</td><td>Schwarzkopf BC Color Freeze Shampoo</td><td>12</td><td>€4.85</td><td>€4.85</td><td class="status-ok">✅ In stock</td><td class="status-ok">As expected</td><td class="status-ok">✅ Added</td></tr>
+          <tr><td>HA-3087</td><td>Redken All Soft Conditioner</td><td>8</td><td>€11.20</td><td>€11.20</td><td class="status-ok">✅ In stock</td><td class="status-ok">As expected</td><td class="status-ok">✅ Added</td></tr>
+          <tr><td>HA-1556</td><td>Wella Oil Reflections Shampoo</td><td>4</td><td>€18.90</td><td>€19.50</td><td class="status-ok">✅ In stock</td><td class="status-warn">⚠️ Higher</td><td class="status-ok">✅ Added</td></tr>
+          <tr><td>HA-4210</td><td>L'Oréal Vitamino Color Masque</td><td>6</td><td>€9.45</td><td>€9.45</td><td class="status-ok">✅ In stock</td><td class="status-ok">As expected</td><td class="status-ok">✅ Added</td></tr>
+          <tr><td>HA-0893</td><td>Moroccanoil Treatment Oil</td><td>5</td><td>€41.44</td><td>—</td><td class="status-fail">❌ Out of stock</td><td>—</td><td class="status-fail">❌ Not added</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="banner banner-email">📧 Notification email sent to customer@example.com</div>
+
+    <div class="card">
+      <h2>✉️ Email Preview</h2>
+      <div class="email-preview">
+        <div class="subject">Your order has been added to the cart — Hairaction</div>
+        <div class="body">
+          Hi there,<br><br>
+          Great news! Your Buy Order <strong>BO-2026-0412</strong> has been processed. <strong>4 of 5 items</strong> have been added to your cart on <strong>hairaction.nl</strong>.<br><br>
+          ✅ Schwarzkopf BC Color Freeze Shampoo × 12 — €4.85<br>
+          ✅ Redken All Soft Conditioner × 8 — €11.20<br>
+          ⚠️ Wella Oil Reflections Shampoo × 4 — €19.50 (expected €18.90)<br>
+          ✅ L'Oréal Vitamino Color Masque × 6 — €9.45<br>
+          ❌ Moroccanoil Treatment Oil × 5 — Out of stock<br><br>
+          Please review your cart and complete the order.
+          <br><br>
+          <a class="cta" href="https://www.hairaction.nl" data-element-id="review-cta">Review &amp; Finalize Order →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

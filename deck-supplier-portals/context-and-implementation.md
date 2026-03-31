@@ -473,6 +473,8 @@ When fetching BOs from Optiply, transform each line item:
 
 ## 📁 Related Files
 
+- [www26-demo/README.md](./www26-demo/README.md) — WWW26 fair demo (Hairaction): Retool guide + reference UI.
+- [admin-panel-supplier-portal-po-plan.md](./admin-panel-supplier-portal-po-plan.md) — Step-by-step plan for an Optiply Admin page (BO id, supplier, portal preview, submit).
 - file:product-growth-plan/deck-optiply-integration-doc.md - Full Deck API documentation
 - file:product-growth-plan/agentic-optiply.md - Agentic Layer Roadmap (parent context)
 - product-growth-plan/00-roadmap-overview/management-presentation.md - Management presentation
